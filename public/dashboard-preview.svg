@@ -1,0 +1,39 @@
+<svg width="1200" height="700" viewBox="0 0 1200 700" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="700" fill="#f8fafc"/>
+  <rect x="50" y="50" width="1100" height="600" rx="12" fill="white" stroke="#e2e8f0" stroke-width="2"/>
+  
+  <!-- Header -->
+  <rect x="70" y="70" width="1060" height="60" rx="8" fill="#0065ff"/>
+  <text x="100" y="105" font-family="Inter, sans-serif" font-size="24" font-weight="600" fill="white">Reputraq Dashboard</text>
+  
+  <!-- Sidebar -->
+  <rect x="70" y="150" width="200" height="480" rx="8" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+  <rect x="90" y="180" width="160" height="40" rx="6" fill="#e2e8f0"/>
+  <rect x="90" y="240" width="160" height="40" rx="6" fill="#e2e8f0"/>
+  <rect x="90" y="300" width="160" height="40" rx="6" fill="#e2e8f0"/>
+  <rect x="90" y="360" width="160" height="40" rx="6" fill="#e2e8f0"/>
+  
+  <!-- Main Content Area -->
+  <rect x="290" y="150" width="860" height="480" rx="8" fill="white" stroke="#e2e8f0" stroke-width="1"/>
+  
+  <!-- Charts -->
+  <rect x="310" y="180" width="400" height="200" rx="8" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="330" y="205" font-family="Inter, sans-serif" font-size="16" font-weight="600" fill="#374151">Sentiment Analysis</text>
+  
+  <rect x="730" y="180" width="400" height="200" rx="8" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="750" y="205" font-family="Inter, sans-serif" font-size="16" font-weight="600" fill="#374151">Mention Trends</text>
+  
+  <!-- Data Table -->
+  <rect x="310" y="400" width="820" height="200" rx="8" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="330" y="425" font-family="Inter, sans-serif" font-size="16" font-weight="600" fill="#374151">Recent Mentions</text>
+  
+  <!-- Sample data rows -->
+  <rect x="330" y="450" width="780" height="30" fill="white" stroke="#e2e8f0" stroke-width="1"/>
+  <rect x="330" y="490" width="780" height="30" fill="white" stroke="#e2e8f0" stroke-width="1"/>
+  <rect x="330" y="530" width="780" height="30" fill="white" stroke="#e2e8f0" stroke-width="1"/>
+  
+  <!-- Status indicators -->
+  <circle cx="350" cy="465" r="6" fill="#10b981"/>
+  <circle cx="350" cy="505" r="6" fill="#f59e0b"/>
+  <circle cx="350" cy="545" r="6" fill="#ef4444"/>
+</svg>

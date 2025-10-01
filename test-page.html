@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ensemble Social APIs Test Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .test-button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        .input-group {
+            margin: 10px 0;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status.pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Ensemble Social APIs Test Page</h1>
+        <p>This page allows you to test all the ensemble social APIs directly from your browser.</p>
+        
+        <div class="input-group">
+            <label for="baseUrl">Base URL:</label>
+            <input type="text" id="baseUrl" value="https://your-base-url.com" placeholder="Enter your API base URL">
+        </div>
+        
+        <div class="input-group">
+            <label for="token">Token:</label>
+            <input type="text" id="token" value="ynjXb8sa7fImKelP" placeholder="Enter your API token">
+        </div>
+        
+        <div class="input-group">
+            <label for="keyword">Test Keyword:</label>
+            <input type="text" id="keyword" value="keyboard" placeholder="Enter search keyword">
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="test-section">
+            <h3>📺 YouTube Search API</h3>
+            <button class="test-button" onclick="testYouTubeSearch()">Test YouTube Search</button>
+            <span id="youtube-status" class="status pending">Ready</span>
+            <div id="youtube-result" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🏷️ YouTube Hashtag API</h3>
+            <button class="test-button" onclick="testYouTubeHashtag()">Test YouTube Hashtag</button>
+            <span id="youtube-hashtag-status" class="status pending">Ready</span>
+            <div id="youtube-hashtag-result" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🎵 TikTok Hashtag API</h3>
+            <button class="test-button" onclick="testTikTokHashtag()">Test TikTok Hashtag</button>
+            <span id="tiktok-status" class="status pending">Ready</span>
+            <div id="tiktok-result" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>📸 Instagram Search API</h3>
+            <button class="test-button" onclick="testInstagramSearch()">Test Instagram Search</button>
+            <span id="instagram-status" class="status pending">Ready</span>
+            <div id="instagram-result" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔗 Our Ensemble Search API</h3>
+            <button class="test-button" onclick="testEnsembleSearch()">Test Ensemble Search</button>
+            <span id="ensemble-status" class="status pending">Ready</span>
+            <div id="ensemble-result" class="result" style="display: none;"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🚀 Run All Tests</h3>
+            <button class="test-button" onclick="runAllTests()">Run All Tests</button>
+            <span id="all-tests-status" class="status pending">Ready</span>
+            <div id="all-tests-result" class="result" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        function getConfig() {
+            return {
+                baseUrl: document.getElementById('baseUrl').value,
+                token: document.getElementById('token').value,
+                keyword: document.getElementById('keyword').value
+            };
+        }
+
+        function updateStatus(testId, status, message) {
+            const statusElement = document.getElementById(testId + '-status');
+            const resultElement = document.getElementById(testId + '-result');
+            
+            statusElement.textContent = message;
+            statusElement.className = 'status ' + status;
+            
+            if (message !== 'Ready') {
+                resultElement.style.display = 'block';
+            }
+        }
+
+        function showResult(testId, data, isError = false) {
+            const resultElement = document.getElementById(testId + '-result');
+            resultElement.textContent = JSON.stringify(data, null, 2);
+            resultElement.className = 'result ' + (isError ? 'error' : 'success');
+            resultElement.style.display = 'block';
+        }
+
+        async function testYouTubeSearch() {
+            const config = getConfig();
+            updateStatus('youtube', 'pending', 'Testing...');
+            
+            try {
+                const url = `${config.baseUrl}/youtube/search?keyword=${encodeURIComponent(config.keyword)}&depth=1&start_cursor=&period=overall&sorting=relevance&get_additional_info=false&token=${config.token}`;
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    updateStatus('youtube', 'success', 'Success');
+                    showResult('youtube', {
+                        status: response.status,
+                        postsCount: data?.data?.posts?.length || 0,
+                        sampleData: data?.data?.posts?.[0] || null
+                    });
+                } else {
+                    updateStatus('youtube', 'error', 'Failed');
+                    showResult('youtube', data, true);
+                }
+            } catch (error) {
+                updateStatus('youtube', 'error', 'Error');
+                showResult('youtube', { error: error.message }, true);
+            }
+        }
+
+        async function testYouTubeHashtag() {
+            const config = getConfig();
+            updateStatus('youtube-hashtag', 'pending', 'Testing...');
+            
+            try {
+                const url = `${config.baseUrl}/youtube/hashtag/search?name=${encodeURIComponent(config.keyword)}&depth=1&only_shorts=false&token=${config.token}`;
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    updateStatus('youtube-hashtag', 'success', 'Success');
+                    showResult('youtube-hashtag', {
+                        status: response.status,
+                        data: data
+                    });
+                } else {
+                    updateStatus('youtube-hashtag', 'error', 'Failed');
+                    showResult('youtube-hashtag', data, true);
+                }
+            } catch (error) {
+                updateStatus('youtube-hashtag', 'error', 'Error');
+                showResult('youtube-hashtag', { error: error.message }, true);
+            }
+        }
+
+        async function testTikTokHashtag() {
+            const config = getConfig();
+            updateStatus('tiktok', 'pending', 'Testing...');
+            
+            try {
+                const url = `${config.baseUrl}/tt/hashtag/posts?name=${encodeURIComponent(config.keyword)}&cursor=0&token=${config.token}`;
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    updateStatus('tiktok', 'success', 'Success');
+                    showResult('tiktok', {
+                        status: response.status,
+                        postsCount: data?.data?.posts?.length || 0,
+                        sampleData: data?.data?.posts?.[0] || null
+                    });
+                } else {
+                    updateStatus('tiktok', 'error', 'Failed');
+                    showResult('tiktok', data, true);
+                }
+            } catch (error) {
+                updateStatus('tiktok', 'error', 'Error');
+                showResult('tiktok', { error: error.message }, true);
+            }
+        }
+
+        async function testInstagramSearch() {
+            const config = getConfig();
+            updateStatus('instagram', 'pending', 'Testing...');
+            
+            try {
+                const url = `${config.baseUrl}/instagram/search?text=${encodeURIComponent(config.keyword)}&token=${config.token}`;
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    updateStatus('instagram', 'success', 'Success');
+                    showResult('instagram', {
+                        status: response.status,
+                        postsCount: data?.data?.posts?.length || 0,
+                        sampleData: data?.data?.posts?.[0] || null
+                    });
+                } else {
+                    updateStatus('instagram', 'error', 'Failed');
+                    showResult('instagram', data, true);
+                }
+            } catch (error) {
+                updateStatus('instagram', 'error', 'Error');
+                showResult('instagram', { error: error.message }, true);
+            }
+        }
+
+        async function testEnsembleSearch() {
+            const config = getConfig();
+            updateStatus('ensemble', 'pending', 'Testing...');
+            
+            try {
+                const response = await fetch('http://localhost:3000/api/ensemble-search', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer test-token'
+                    },
+                    body: JSON.stringify({ keyword: config.keyword })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    updateStatus('ensemble', 'success', 'Success');
+                    showResult('ensemble', {
+                        status: response.status,
+                        keyword: data.keyword,
+                        platforms: Object.keys(data.data?.platforms || {}),
+                        data: data.data
+                    });
+                } else {
+                    updateStatus('ensemble', 'error', 'Failed');
+                    showResult('ensemble', data, true);
+                }
+            } catch (error) {
+                updateStatus('ensemble', 'error', 'Error');
+                showResult('ensemble', { error: error.message }, true);
+            }
+        }
+
+        async function runAllTests() {
+            updateStatus('all-tests', 'pending', 'Running all tests...');
+            
+            const results = {
+                youtube: false,
+                youtubeHashtag: false,
+                tiktok: false,
+                instagram: false,
+                ensemble: false
+            };
+            
+            try {
+                await testYouTubeSearch();
+                results.youtube = document.getElementById('youtube-status').classList.contains('success');
+                
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                await testYouTubeHashtag();
+                results.youtubeHashtag = document.getElementById('youtube-hashtag-status').classList.contains('success');
+                
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                await testTikTokHashtag();
+                results.tiktok = document.getElementById('tiktok-status').classList.contains('success');
+                
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                await testInstagramSearch();
+                results.instagram = document.getElementById('instagram-status').classList.contains('success');
+                
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                await testEnsembleSearch();
+                results.ensemble = document.getElementById('ensemble-status').classList.contains('success');
+                
+                const successCount = Object.values(results).filter(Boolean).length;
+                const totalTests = Object.keys(results).length;
+                
+                if (successCount === totalTests) {
+                    updateStatus('all-tests', 'success', `All ${totalTests} tests passed!`);
+                } else {
+                    updateStatus('all-tests', 'error', `${successCount}/${totalTests} tests passed`);
+                }
+                
+                showResult('all-tests', {
+                    summary: `${successCount}/${totalTests} tests passed`,
+                    results: results,
+                    details: {
+                        youtube: results.youtube ? '✅' : '❌',
+                        youtubeHashtag: results.youtubeHashtag ? '✅' : '❌',
+                        tiktok: results.tiktok ? '✅' : '❌',
+                        instagram: results.instagram ? '✅' : '❌',
+                        ensemble: results.ensemble ? '✅' : '❌'
+                    }
+                });
+                
+            } catch (error) {
+                updateStatus('all-tests', 'error', 'Error running tests');
+                showResult('all-tests', { error: error.message }, true);
+            }
+        }
+    </script>
+</body>
+</html>
+
+

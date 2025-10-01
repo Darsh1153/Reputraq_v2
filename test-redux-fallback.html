@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Redux Fallback for Historical Data</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .status {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+            width: 100%;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        .info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔄 Test Redux Fallback for Historical Data</h1>
+        
+        <div class="status success">
+            <strong>✅ Redux Fallback Implemented:</strong><br>
+            The Historical Data page now uses Redux data as a fallback when the API is unavailable (server not running).
+        </div>
+        
+        <div class="test-section">
+            <h3>🎯 How It Works:</h3>
+            <ol>
+                <li><strong>API First:</strong> Tries to fetch data from `/api/historical-data`</li>
+                <li><strong>Redux Fallback:</strong> If API fails, uses Redux articles from dashboard</li>
+                <li><strong>Data Transformation:</strong> Converts Redux format to historical format</li>
+                <li><strong>Visual Indicator:</strong> Shows "Using Redux Fallback Data" in debug info</li>
+            </ol>
+        </div>
+        
+        <div class="test-section">
+            <h3>🧪 Test the Fallback:</h3>
+            <p>Test the Historical Data page with Redux fallback when server is not running.</p>
+            <div class="button-group">
+                <button onclick="createTestUser()">Create Test User</button>
+                <button onclick="injectReduxData()">Inject Redux Data</button>
+                <button onclick="testHistoricalDataPage()">Test Historical Data Page</button>
+                <button onclick="checkReduxState()">Check Redux State</button>
+            </div>
+        </div>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `<div class="result ${type}">${message}</div>`;
+        }
+        
+        function createTestUser() {
+            try {
+                const testUser = {
+                    id: 9,
+                    name: "Test User",
+                    email: "test@example.com",
+                    plan: "pro",
+                    status: "approved",
+                    keywords: ["bmw", "artificial intelligence", "climate change"]
+                };
+                
+                localStorage.setItem('user', JSON.stringify(testUser));
+                
+                log(`✅ Test user created successfully!
+
+👤 User Details:
+- ID: ${testUser.id}
+- Name: ${testUser.name}
+- Email: ${testUser.email}
+- Plan: ${testUser.plan}
+- Status: ${testUser.status}
+- Keywords: ${testUser.keywords.join(', ')}
+
+🎯 Ready for Redux fallback testing.`, 'success');
+                
+            } catch (error) {
+                log(`❌ Error creating test user: ${error.message}`, 'error');
+            }
+        }
+        
+        function injectReduxData() {
+            try {
+                // Create test articles in Redux format
+                const testArticles = [
+                    {
+                        id: 1,
+                        userId: 9,
+                        keyword: "bmw",
+                        articleId: "bmw_001",
+                        title: "BMW Unveils Revolutionary Electric Vehicle Technology",
+                        description: "BMW has announced breakthrough battery technology that promises to revolutionize the electric vehicle market.",
+                        url: "https://example.com/bmw-electric",
+                        publishedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+                        sourceName: "Auto News Daily",
+                        sourceLogo: "https://via.placeholder.com/50x50/007bff/ffffff?text=AND",
+                        image: "https://via.placeholder.com/400x200/007bff/ffffff?text=BMW+Electric",
+                        sentimentScore: 25,
+                        sentimentLabel: "positive",
+                        readTime: 6,
+                        isBreaking: true,
+                        categories: ["Automotive", "Technology"],
+                        topics: ["Electric Vehicles", "Innovation"],
+                        engagement: { views: 1850, shares: 67, comments: 34 },
+                        rawData: {},
+                        createdAt: new Date().toISOString()
+                    },
+                    {
+                        id: 2,
+                        userId: 9,
+                        keyword: "bmw",
+                        articleId: "bmw_002",
+                        title: "BMW Reports Record Sales in Q4 2024",
+                        description: "BMW has reported its highest quarterly sales figures in company history.",
+                        url: "https://example.com/bmw-sales",
+                        publishedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+                        sourceName: "Business Automotive",
+                        sourceLogo: "https://via.placeholder.com/50x50/28a745/ffffff?text=BA",
+                        image: "https://via.placeholder.com/400x200/28a745/ffffff?text=BMW+Sales",
+                        sentimentScore: 18,
+                        sentimentLabel: "positive",
+                        readTime: 4,
+                        isBreaking: false,
+                        categories: ["Business", "Automotive"],
+                        topics: ["Sales", "Financial Results"],
+                        engagement: { views: 1200, shares: 45, comments: 23 },
+                        rawData: {},
+                        createdAt: new Date().toISOString()
+                    },
+                    {
+                        id: 3,
+                        userId: 9,
+                        keyword: "artificial intelligence",
+                        articleId: "ai_001",
+                        title: "AI Breakthrough: New Model Achieves Human-Level Reasoning",
+                        description: "Researchers have developed an AI model that demonstrates human-level reasoning capabilities.",
+                        url: "https://example.com/ai-breakthrough",
+                        publishedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+                        platformName: "Tech Innovation Weekly",
+                        platformLogo: "https://via.placeholder.com/50x50/6f42c1/ffffff?text=TIW",
+                        image: "https://via.placeholder.com/400x200/6f42c1/ffffff?text=AI+Breakthrough",
+                        sentimentScore: 28,
+                        sentimentLabel: "positive",
+                        readTime: 8,
+                        isBreaking: true,
+                        categories: ["Technology", "AI"],
+                        topics: ["Machine Learning", "Research"],
+                        engagement: { views: 3200, shares: 145, comments: 89 },
+                        rawData: {},
+                        createdAt: new Date().toISOString()
+                    }
+                ];
+                
+                // Store in localStorage to simulate Redux state
+                localStorage.setItem('reduxArticles', JSON.stringify(testArticles));
+                
+                // Also store in monitoringData for dashboard
+                const monitoringData = [
+                    {
+                        keyword: "bmw",
+                        newsData: {
+                            results: testArticles.filter(a => a.keyword === "bmw")
+                        },
+                        socialData: { data: [] },
+                        timestamp: new Date().toISOString()
+                    },
+                    {
+                        keyword: "artificial intelligence",
+                        newsData: {
+                            results: testArticles.filter(a => a.keyword === "artificial intelligence")
+                        },
+                        socialData: { data: [] },
+                        timestamp: new Date().toISOString()
+                    }
+                ];
+                
+                localStorage.setItem('monitoringData', JSON.stringify(monitoringData));
+                
+                log(`✅ Redux data injected successfully!
+
+📊 Test Articles Created:
+- Total Articles: ${testArticles.length}
+- BMW Articles: ${testArticles.filter(a => a.keyword === "bmw").length}
+- AI Articles: ${testArticles.filter(a => a.keyword === "artificial intelligence").length}
+
+📋 Data Stored In:
+✅ localStorage.reduxArticles (for Redux simulation)
+✅ localStorage.monitoringData (for dashboard)
+
+🎯 The Historical Data page should now use this Redux fallback data!
+The debug info should show "Using Redux Fallback Data".`, 'success');
+                
+            } catch (error) {
+                log(`❌ Error injecting Redux data: ${error.message}`, 'error');
+            }
+        }
+        
+        function testHistoricalDataPage() {
+            const url = window.location.origin + '/dashboard/historical';
+            window.open(url, '_blank');
+            
+            log(`🚀 Historical Data Page opened: ${url}
+
+📋 Expected Results:
+1. Page should load without flickering
+2. Debug info should show "Using Redux Fallback Data"
+3. News articles should be displayed (2 BMW + 1 AI)
+4. Data should be filterable by keyword
+5. No "No Data Found" message
+
+🔍 What to Look For:
+- Debug Info section showing data counts
+- "🔄 Using Redux Fallback Data" indicator
+- News Articles section with 3 articles
+- Keyword filtering working
+- Proper article formatting
+
+💡 The Redux fallback should work even without the server running!`, 'info');
+        }
+        
+        function checkReduxState() {
+            try {
+                const reduxArticles = localStorage.getItem('reduxArticles');
+                const monitoringData = localStorage.getItem('monitoringData');
+                
+                if (reduxArticles) {
+                    const articles = JSON.parse(reduxArticles);
+                    
+                    log(`✅ Redux State Check:
+
+📊 Redux Articles:
+- Total Articles: ${articles.length}
+- Articles: ${articles.map(a => `${a.title} (${a.keyword})`).join('\n   - ')}
+
+📋 Monitoring Data:
+${monitoringData ? '✅ Available' : '❌ Not found'}
+
+🎯 This data should be used by the Historical Data page as fallback when API fails.
+
+💡 The Historical Data page will:
+1. Try to fetch from API (will fail if server not running)
+2. Fall back to Redux articles
+3. Transform them to historical format
+4. Display with "Using Redux Fallback Data" indicator`, 'success');
+                } else {
+                    log(`❌ No Redux data found in localStorage.
+
+🔧 Please click "Inject Redux Data" first.`, 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ Error checking Redux state: ${error.message}`, 'error');
+            }
+        }
+        
+        // Auto-create test user and inject data on page load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                createTestUser();
+                setTimeout(() => {
+                    injectReduxData();
+                }, 500);
+            }, 500);
+        });
+    </script>
+</body>
+</html>

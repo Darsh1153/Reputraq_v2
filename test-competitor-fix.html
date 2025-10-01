@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Competitor Fix Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; }
+        .result { margin: 10px 0; padding: 10px; border-radius: 4px; white-space: pre-wrap; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 4px; }
+        button:hover { background: #0056b3; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        .article { margin: 10px 0; padding: 10px; border: 1px solid #eee; border-radius: 4px; }
+        .article-title { font-weight: bold; color: #333; }
+        .article-description { color: #666; font-size: 14px; }
+        .article-meta { color: #999; font-size: 12px; margin-top: 5px; }
+    </style>
+</head>
+<body>
+    <h1>🚀 Competitor Fix Test</h1>
+    
+    <div class="test-section">
+        <h2>📊 Test Competitor Data Collection</h2>
+        <button onclick="testCollection()" id="testBtn">Test Collection for "Apple"</button>
+        <div id="result" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>📰 Collected Articles</h2>
+        <button onclick="fetchArticles()" id="fetchBtn">Fetch Articles</button>
+        <div id="articles" class="result"></div>
+    </div>
+
+    <script>
+        let userData = null;
+        
+        function setResult(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `result ${type}`;
+        }
+        
+        function setArticles(elementId, articles) {
+            const element = document.getElementById(elementId);
+            if (articles.length === 0) {
+                element.innerHTML = '<div class="result info">No articles found</div>';
+                return;
+            }
+            
+            let html = `<div class="result success">Found ${articles.length} articles:</div>`;
+            articles.forEach(article => {
+                html += `
+                    <div class="article">
+                        <div class="article-title">${article.title}</div>
+                        <div class="article-description">${article.description}</div>
+                        <div class="article-meta">
+                            Source: ${article.sourceName} | 
+                            Sentiment: ${article.sentimentLabel} | 
+                            Published: ${new Date(article.publishedAt).toLocaleDateString()}
+                        </div>
+                    </div>
+                `;
+            });
+            element.innerHTML = html;
+        }
+        
+        async function testCollection() {
+            const btn = document.getElementById('testBtn');
+            const result = document.getElementById('result');
+            
+            btn.disabled = true;
+            btn.textContent = 'Testing...';
+            result.textContent = 'Starting test...';
+            
+            try {
+                // Get user from localStorage
+                const user = localStorage.getItem('user');
+                if (!user) {
+                    setResult('result', '❌ Please sign in first at http://localhost:3000/signin', 'error');
+                    return;
+                }
+                
+                userData = JSON.parse(user);
+                const token = btoa(JSON.stringify({ userId: userData.id }));
+                
+                result.textContent = '🔍 Testing competitor data collection...';
+                
+                const response = await fetch('/api/competitor-data/collect', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ competitorKeyword: 'Apple' })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    setResult('result', `✅ Success!\n${data.message}\nArticles collected: ${data.articlesCollected}\nArticles stored: ${data.articlesStored}`, 'success');
+                    
+                    // Show the articles that were returned
+                    if (data.articles && data.articles.length > 0) {
+                        setArticles('articles', data.articles);
+                    }
+                } else {
+                    setResult('result', `❌ Error (${response.status}): ${JSON.stringify(data)}`, 'error');
+                }
+                
+            } catch (error) {
+                setResult('result', `❌ Network Error: ${error.message}`, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Test Collection for "Apple"';
+            }
+        }
+        
+        async function fetchArticles() {
+            const btn = document.getElementById('fetchBtn');
+            const articles = document.getElementById('articles');
+            
+            btn.disabled = true;
+            btn.textContent = 'Fetching...';
+            
+            try {
+                if (!userData) {
+                    setResult('articles', '❌ Please run the collection test first', 'error');
+                    return;
+                }
+                
+                const token = btoa(JSON.stringify({ userId: userData.id }));
+                
+                const response = await fetch(`/api/news?userId=${userData.id}&keyword=Apple&limit=50`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.articles && Array.isArray(data.articles)) {
+                        setArticles('articles', data.articles);
+                    } else {
+                        setResult('articles', '❌ No articles in response', 'error');
+                    }
+                } else {
+                    setResult('articles', `❌ Failed to fetch articles: ${response.status}`, 'error');
+                }
+                
+            } catch (error) {
+                setResult('articles', `❌ Error: ${error.message}`, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Fetch Articles';
+            }
+        }
+        
+        // Auto-run test on page load
+        window.onload = function() {
+            testCollection();
+        };
+    </script>
+</body>
+</html>

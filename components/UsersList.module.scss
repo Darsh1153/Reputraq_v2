@@ -1,0 +1,43 @@
+.usersSection {
+  margin-top: 2rem;
+  padding: 2rem;
+  border: 1px solid #eaeaea;
+  border-radius: 10px;
+  background: #fafafa;
+}
+
+.usersTitle {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.usersList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.userItem {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #eee;
+  
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.userName {
+  font-weight: 500;
+  color: #333;
+}
+
+.loading {
+  color: #666;
+  font-style: italic;
+}
+
+.error {
+  color: #e00;
+  font-weight: 500;
+}

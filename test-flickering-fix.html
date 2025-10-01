@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Flickering Fix</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .status {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+            width: 100%;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        .info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .fix-list {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .fix-list ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .fix-list li {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Test Flickering Fix</h1>
+        
+        <div class="status success">
+            <strong>✅ Flickering Issue Fixed:</strong><br>
+            The UI was flickering between "Loading historical data" and "No data found" due to infinite loops and rapid state changes.
+        </div>
+        
+        <div class="test-section">
+            <h3>🎯 The Problem:</h3>
+            <p>The historical data UI was flickering because:</p>
+            <div class="fix-list">
+                <ul>
+                    <li><strong>Infinite Loop:</strong> DateRangeSlider useEffect had <code>onDateRangeChange</code> in dependencies</li>
+                    <li><strong>No Initial Load:</strong> HistoricalDataDisplay had no initial data fetch</li>
+                    <li><strong>Rapid API Calls:</strong> No debouncing when filters changed</li>
+                    <li><strong>Loading State Issues:</strong> Loading state was not properly managed</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>✅ The Fixes Applied:</h3>
+            <div class="fix-list">
+                <ul>
+                    <li><strong>Fixed Infinite Loop:</strong> Removed <code>onDateRangeChange</code> from useEffect dependencies</li>
+                    <li><strong>Added Initial Load:</strong> HistoricalDataDisplay now fetches data on mount</li>
+                    <li><strong>Added Debouncing:</strong> 300ms debounce prevents rapid API calls</li>
+                    <li><strong>Improved Loading State:</strong> Starts with loading=true, prevents flickering</li>
+                    <li><strong>Better State Management:</strong> Added initialized flag to prevent multiple initial loads</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🧪 Test the Fix:</h3>
+            <p>Test the historical data page to ensure the flickering is resolved.</p>
+            <div class="button-group">
+                <button onclick="createTestUser()">Create Test User</button>
+                <button onclick="testHistoricalDataPage()">Test Historical Data Page</button>
+                <button onclick="testFilterChanges()">Test Filter Changes</button>
+                <button onclick="checkConsoleErrors()">Check Console Errors</button>
+            </div>
+        </div>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `<div class="result ${type}">${message}</div>`;
+        }
+        
+        function createTestUser() {
+            try {
+                const testUser = {
+                    id: 9,
+                    name: "Test User",
+                    email: "test@example.com",
+                    plan: "pro",
+                    status: "approved",
+                    keywords: ["bmw", "artificial intelligence", "climate change"]
+                };
+                
+                localStorage.setItem('user', JSON.stringify(testUser));
+                
+                log(`✅ Test user created successfully!
+
+👤 User Details:
+- ID: ${testUser.id}
+- Name: ${testUser.name}
+- Email: ${testUser.email}
+- Plan: ${testUser.plan}
+- Status: ${testUser.status}
+- Keywords: ${testUser.keywords.join(', ')}
+
+🎯 This user will be used to test the historical data page.`, 'success');
+                
+            } catch (error) {
+                log(`❌ Error creating test user: ${error.message}`, 'error');
+            }
+        }
+        
+        function testHistoricalDataPage() {
+            const url = window.location.origin + '/dashboard/historical';
+            window.open(url, '_blank');
+            
+            log(`🚀 Historical Data Page opened: ${url}
+
+📋 Expected Results (No Flickering):
+1. Page loads with "Loading historical data..." message
+2. After loading, shows either data or "No Data Found" message
+3. NO flickering between loading and no data states
+4. Date range slider works smoothly
+5. Filter changes don't cause rapid loading states
+6. No infinite loops in browser console
+
+🔍 What to Look For:
+- Smooth loading experience
+- No rapid state changes
+- Stable UI without flickering
+- Proper error handling if API fails
+
+💡 The fixes should eliminate the flickering issue completely!`, 'info');
+        }
+        
+        function testFilterChanges() {
+            log(`🧪 Testing Filter Changes:
+
+📋 Test Steps:
+1. Open the Historical Data page
+2. Try changing date ranges (Last 7 days, Last 30 days, etc.)
+3. Try changing keywords in the dropdown
+4. Try switching between "All Data", "News Only", "Social Only"
+5. Try custom date ranges
+
+✅ Expected Behavior:
+- Each filter change should trigger ONE loading state
+- No rapid flickering between states
+- Debounced API calls (300ms delay)
+- Smooth transitions between loading and data states
+
+❌ What Should NOT Happen:
+- Rapid flickering between "Loading" and "No data found"
+- Multiple rapid API calls
+- Infinite loading loops
+- Console errors about infinite re-renders
+
+🎯 The debouncing and proper state management should prevent all flickering issues.`, 'info');
+        }
+        
+        function checkConsoleErrors() {
+            log(`🔍 Console Error Check:
+
+📋 What to Check in Browser Console:
+1. Open Developer Tools (F12)
+2. Go to Console tab
+3. Look for these errors:
+
+❌ Errors That Should Be Gone:
+- "Maximum update depth exceeded" (infinite loop)
+- "Cannot read property of undefined" (state issues)
+- Rapid API call errors
+- useEffect dependency warnings
+
+✅ What You Should See:
+- Clean console with no infinite loop errors
+- Proper API calls with reasonable timing
+- No React warnings about dependencies
+- Smooth state transitions
+
+🎯 If you see any of the ❌ errors, the fix may need additional work.
+If the console is clean, the flickering issue should be resolved!`, 'info');
+        }
+        
+        // Auto-create test user on page load
+        window.addEventListener('load', () => {
+            setTimeout(createTestUser, 500);
+        });
+    </script>
+</body>
+</html>

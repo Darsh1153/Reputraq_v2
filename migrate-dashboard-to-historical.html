@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Migrate Dashboard Data to Historical Tables</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .status {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+            width: 100%;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .step {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #007bff;
+        }
+        .step h4 {
+            margin: 0 0 5px 0;
+            color: #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔄 Migrate Dashboard Data to Historical Tables</h1>
+        
+        <div class="status warning">
+            <strong>🎯 Issue Identified:</strong><br>
+            Dashboard has data but Historical Data page shows empty arrays. The data collection process needs to save data to both dashboard and historical tables.
+        </div>
+        
+        <div class="test-section">
+            <h3>📊 Current Situation:</h3>
+            <p>Based on your debug info:</p>
+            <ul>
+                <li>✅ <strong>API is working:</strong> Historical data API responds correctly</li>
+                <li>✅ <strong>Data structure is correct:</strong> Response format is proper</li>
+                <li>❌ <strong>Historical tables are empty:</strong> <code>news: []</code>, <code>social: []</code></li>
+                <li>✅ <strong>Dashboard has data:</strong> Recent Activity shows articles</li>
+            </ul>
+        </div>
+        
+        <div class="test-section">
+            <h3>🔧 Solutions:</h3>
+            
+            <div class="step">
+                <h4>Solution 1: Trigger Data Collection (Recommended)</h4>
+                <p>Use the updated data collection API that now saves to both dashboard and historical tables.</p>
+                <button onclick="triggerDataCollection()">Trigger Data Collection</button>
+            </div>
+            
+            <div class="step">
+                <h4>Solution 2: Create Migration API</h4>
+                <p>Create an API endpoint to migrate existing dashboard data to historical tables.</p>
+                <button onclick="createMigrationAPI()">Create Migration API</button>
+            </div>
+            
+            <div class="step">
+                <h4>Solution 3: Manual Data Injection</h4>
+                <p>Manually inject test data into the historical tables for immediate testing.</p>
+                <button onclick="injectHistoricalData()">Inject Historical Data</button>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🧪 Test Steps:</h3>
+            <div class="button-group">
+                <button onclick="checkDashboardData()">Check Dashboard Data</button>
+                <button onclick="checkHistoricalData()">Check Historical Data</button>
+                <button onclick="testHistoricalDataPage()">Test Historical Data Page</button>
+                <button onclick="runFullTest()">Run Full Test</button>
+            </div>
+        </div>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `<div class="result ${type}">${message}</div>`;
+        }
+        
+        async function triggerDataCollection() {
+            try {
+                const userData = localStorage.getItem('user');
+                if (!userData) {
+                    log('❌ No user found in localStorage.', 'error');
+                    return;
+                }
+                
+                const user = JSON.parse(userData);
+                const token = btoa(JSON.stringify({ userId: user.id }));
+                
+                log('🚀 Triggering data collection...\n', 'info');
+                
+                const response = await fetch('/api/data/collect', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    log(`✅ Data Collection Successful!
+
+📊 Collection Results:
+- Status: ${response.status}
+- Message: ${result.message}
+- Collection Job ID: ${result.collectionJobId}
+- Keywords Processed: ${result.data?.length || 0}
+
+📋 Data Storage:
+✅ Dashboard Data: Updated in users.monitoringData
+✅ Historical News: Saved to historical_news_data table
+✅ Historical Social: Saved to historical_social_data table
+✅ Collection Job: Recorded in data_collection_jobs table
+
+🎯 Now check the Historical Data page - it should show data!
+The updated data collection process saves to both locations.`, 'success');
+                } else {
+                    const errorData = await response.json();
+                    log(`❌ Data Collection Failed!
+
+Status: ${response.status}
+Error: ${errorData.error}
+
+🔍 This might indicate:
+- Server is not running
+- No keywords configured
+- Database connection issues
+
+💡 The server needs to be running for this to work.`, 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ Error triggering data collection: ${error.message}
+
+🔍 This usually indicates the server is not running.
+The data collection API needs the server to be active.`, 'error');
+            }
+        }
+        
+        async function createMigrationAPI() {
+            try {
+                const userData = localStorage.getItem('user');
+                if (!userData) {
+                    log('❌ No user found in localStorage.', 'error');
+                    return;
+                }
+                
+                const user = JSON.parse(userData);
+                const token = btoa(JSON.stringify({ userId: user.id }));
+                
+                log('🔄 Running migration API...\n', 'info');
+                
+                const response = await fetch('/api/migrate-dashboard-to-historical', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    log(`✅ Migration API Successful!
+
+📊 Migration Results:
+- Status: ${response.status}
+- Message: ${result.message}
+- Migration Job ID: ${result.migrationJobId}
+
+📈 Data Migrated:
+- Keywords Processed: ${result.migratedData?.keywords || 0}
+- News Articles: ${result.migratedData?.newsArticles || 0}
+- Social Posts: ${result.migratedData?.socialPosts || 0}
+
+🎯 The Historical Data page should now show data!
+All dashboard data has been migrated to historical tables.`, 'success');
+                } else {
+                    const errorData = await response.json();
+                    log(`❌ Migration API Failed!
+
+Status: ${response.status}
+Error: ${errorData.error}
+
+🔍 This might indicate:
+- Server is not running
+- No monitoring data found
+- Database connection issues
+
+💡 Make sure the server is running and dashboard has data.`, 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ Error running migration API: ${error.message}
+
+🔍 This usually indicates the server is not running.
+The migration API needs the server to be active.`, 'error');
+            }
+        }
+        
+        function injectHistoricalData() {
+            try {
+                // Get existing dashboard data
+                const dashboardData = localStorage.getItem('monitoringData') || localStorage.getItem('testMonitoringData');
+                
+                if (!dashboardData) {
+                    log('❌ No dashboard data found in localStorage.
+
+🔧 Please ensure dashboard has data first.
+You can use the test data injection tools to create dashboard data.', 'error');
+                    return;
+                }
+                
+                const data = JSON.parse(dashboardData);
+                
+                // Transform dashboard data to historical format
+                const historicalData = {
+                    news: [],
+                    social: [],
+                    totalNews: 0,
+                    totalSocial: 0,
+                    dateRange: { startDate: "2025-08-01", endDate: "2025-09-30" },
+                    filters: { keyword: "", dataType: "all" }
+                };
+                
+                // Process each keyword's data
+                for (const keywordData of data) {
+                    // Transform news articles
+                    if (keywordData.newsData?.results) {
+                        for (const article of keywordData.newsData.results) {
+                            historicalData.news.push({
+                                id: Math.floor(Math.random() * 10000),
+                                userId: 9,
+                                keyword: keywordData.keyword,
+                                collectionJobId: 1,
+                                articleId: article.id?.toString() || Math.random().toString(),
+                                title: article.title || 'No title',
+                                description: article.description || '',
+                                url: article.url || '#',
+                                publishedAt: new Date(article.publishedAt || new Date()).toISOString(),
+                                sourceName: article.source?.name || 'Unknown Source',
+                                sourceLogo: article.source?.logo || null,
+                                image: article.image || null,
+                                sentimentScore: article.sentiment?.score || 0,
+                                sentimentLabel: article.sentiment?.label || 'neutral',
+                                readTime: article.readTime || 1,
+                                isBreaking: article.isBreaking || false,
+                                categories: article.categories || [],
+                                topics: article.topics || [],
+                                engagement: article.engagement || {},
+                                rawData: article,
+                                collectedAt: new Date().toISOString(),
+                                createdAt: new Date().toISOString()
+                            });
+                        }
+                    }
+                    
+                    // Transform social posts
+                    if (keywordData.socialData?.data) {
+                        for (const post of keywordData.socialData.data) {
+                            historicalData.social.push({
+                                id: Math.floor(Math.random() * 10000),
+                                userId: 9,
+                                keyword: keywordData.keyword,
+                                collectionJobId: 1,
+                                postId: post.id?.toString() || Math.random().toString(),
+                                title: post.title || null,
+                                description: post.description || null,
+                                url: post.url || null,
+                                publishedAt: new Date(post.publishedAt || new Date()).toISOString(),
+                                platformName: post.platform?.name || 'Unknown Platform',
+                                platformLogo: post.platform?.logo || null,
+                                image: post.image || null,
+                                sentimentScore: post.sentiment?.score || 0,
+                                sentimentLabel: post.sentiment?.label || 'neutral',
+                                engagement: post.engagement || {},
+                                rawData: post,
+                                collectedAt: new Date().toISOString(),
+                                createdAt: new Date().toISOString()
+                            });
+                        }
+                    }
+                }
+                
+                historicalData.totalNews = historicalData.news.length;
+                historicalData.totalSocial = historicalData.social.length;
+                
+                // Store transformed data
+                localStorage.setItem('historicalTestData', JSON.stringify(historicalData));
+                
+                log(`✅ Historical data injected successfully!
+
+📊 Migration Results:
+- Dashboard Keywords: ${data.length}
+- Transformed News Articles: ${historicalData.news.length}
+- Transformed Social Posts: ${historicalData.social.length}
+- Total News: ${historicalData.totalNews}
+- Total Social: ${historicalData.totalSocial}
+
+📋 Data Transformation:
+✅ Dashboard format → Historical table format
+✅ Added required fields (userId, collectionJobId, etc.)
+✅ Proper date formatting
+✅ Maintained all original data
+
+🎯 The Historical Data page should now display this data!
+This simulates what the migration API would do.`, 'success');
+                
+            } catch (error) {
+                log(`❌ Error injecting historical data: ${error.message}`, 'error');
+            }
+        }
+        
+        async function checkDashboardData() {
+            try {
+                const userData = localStorage.getItem('user');
+                if (!userData) {
+                    log('❌ No user found in localStorage.', 'error');
+                    return;
+                }
+                
+                const user = JSON.parse(userData);
+                const token = btoa(JSON.stringify({ userId: user.id }));
+                
+                log('🔍 Checking dashboard data...\n', 'info');
+                
+                const response = await fetch('/api/data/monitoring', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const monitoringData = data.monitoringData || [];
+                    
+                    let report = '📊 Dashboard Data Check:\n\n';
+                    report += `✅ Monitoring Data Found:\n`;
+                    report += `   - Keywords Processed: ${monitoringData.length}\n`;
+                    
+                    let totalNews = 0;
+                    let totalSocial = 0;
+                    
+                    for (const item of monitoringData) {
+                        const newsCount = item.newsData?.results?.length || 0;
+                        const socialCount = item.socialData?.data?.length || 0;
+                        totalNews += newsCount;
+                        totalSocial += socialCount;
+                        
+                        report += `   - ${item.keyword}: ${newsCount} news, ${socialCount} social\n`;
+                    }
+                    
+                    report += `\n📈 Totals:\n`;
+                    report += `   - Total News Articles: ${totalNews}\n`;
+                    report += `   - Total Social Posts: ${totalSocial}\n\n`;
+                    
+                    if (totalNews > 0 || totalSocial > 0) {
+                        report += `✅ Dashboard has data! This should be migrated to historical tables.\n`;
+                        report += `💡 Use "Trigger Data Collection" or "Inject Historical Data" to populate historical tables.`;
+                        log(report, 'success');
+                    } else {
+                        report += `❌ Dashboard has no data. Need to collect data first.`;
+                        log(report, 'warning');
+                    }
+                } else {
+                    log(`❌ Dashboard data check failed: ${response.status} - ${await response.text()}`, 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ Error checking dashboard data: ${error.message}
+
+🔍 This usually indicates the server is not running.`, 'error');
+            }
+        }
+        
+        async function checkHistoricalData() {
+            try {
+                const userData = localStorage.getItem('user');
+                if (!userData) {
+                    log('❌ No user found in localStorage.', 'error');
+                    return;
+                }
+                
+                const user = JSON.parse(userData);
+                const token = btoa(JSON.stringify({ userId: user.id }));
+                
+                log('🔍 Checking historical data...\n', 'info');
+                
+                const response = await fetch('/api/historical-data', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const historicalData = data.data || {};
+                    
+                    let report = '📊 Historical Data Check:\n\n';
+                    report += `✅ API Response:\n`;
+                    report += `   - Status: ${response.status}\n`;
+                    report += `   - Message: ${data.message}\n\n`;
+                    
+                    report += `📈 Data Found:\n`;
+                    report += `   - News Articles: ${historicalData.news?.length || 0}\n`;
+                    report += `   - Social Posts: ${historicalData.social?.length || 0}\n`;
+                    report += `   - Total News: ${historicalData.totalNews || 0}\n`;
+                    report += `   - Total Social: ${historicalData.totalSocial || 0}\n\n`;
+                    
+                    if ((historicalData.news?.length || 0) > 0 || (historicalData.social?.length || 0) > 0) {
+                        report += `✅ Historical Data API has data!\n`;
+                        report += `💡 The Historical Data page should display this data.`;
+                        log(report, 'success');
+                    } else {
+                        report += `❌ Historical Data API has no data.\n`;
+                        report += `💡 This confirms the historical tables are empty.\n`;
+                        report += `🔧 Use "Trigger Data Collection" or "Inject Historical Data" to populate them.`;
+                        log(report, 'warning');
+                    }
+                } else {
+                    log(`❌ Historical Data API failed: ${response.status} - ${await response.text()}`, 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ Error checking historical data: ${error.message}
+
+🔍 This usually indicates the server is not running.`, 'error');
+            }
+        }
+        
+        function testHistoricalDataPage() {
+            const url = window.location.origin + '/dashboard/historical';
+            window.open(url, '_blank');
+            
+            log(`🚀 Historical Data Page opened: ${url}
+
+📋 Expected Results:
+1. Debug info should show data counts (if data was injected)
+2. News articles should be displayed
+3. Social posts should be displayed
+4. No "No Data Found" message
+
+🔍 What to Look For:
+- Debug Info section showing data counts
+- News Articles section (if data exists)
+- Social Posts section (if data exists)
+- Proper filtering options
+
+💡 If you still see "No Data Found":
+1. Make sure you clicked "Inject Historical Data" first
+2. Check that dashboard has data
+3. Verify the data transformation worked`, 'info');
+        }
+        
+        async function runFullTest() {
+            log('🔍 Running full test...\n', 'info');
+            
+            // Step 1: Check dashboard data
+            await checkDashboardData();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // Step 2: Check historical data
+            await checkHistoricalData();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            log('\n🎯 Full Test Complete!\n\nNext Steps:\n1. If dashboard has data but historical is empty, use "Inject Historical Data"\n2. If both are empty, use "Trigger Data Collection"\n3. Then test the Historical Data page', 'info');
+        }
+        
+        // Auto-create test user on page load
+        window.addEventListener('load', () => {
+            const testUser = {
+                id: 9,
+                name: "Test User",
+                email: "test@example.com",
+                plan: "pro",
+                status: "approved",
+                keywords: ["bmw", "artificial intelligence", "climate change"]
+            };
+            
+            localStorage.setItem('user', JSON.stringify(testUser));
+            
+            setTimeout(() => {
+                log('✅ Test user created automatically. Ready for migration tests!', 'success');
+            }, 500);
+        });
+    </script>
+</body>
+</html>

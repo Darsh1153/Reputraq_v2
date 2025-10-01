@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug API Response</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .status {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+            width: 100%;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Debug API Response</h1>
+        
+        <div class="status warning">
+            <strong>🎯 Issue Identified:</strong><br>
+            Debug info shows "✅ Using API Data" but with 0 articles. This means the API is working but returning empty arrays from the database.
+        </div>
+        
+        <div class="test-section">
+            <h3>🔍 Debug Steps:</h3>
+            <p>Let's check what the API is actually returning and why the historical tables are empty.</p>
+            <div class="button-group">
+                <button onclick="testHistoricalAPI()">Test Historical Data API</button>
+                <button onclick="testMonitoringAPI()">Test Monitoring Data API</button>
+                <button onclick="checkDatabaseTables()">Check Database Tables</button>
+                <button onclick="populateHistoricalTables()">Populate Historical Tables</button>
+            </div>
+        </div>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `<div class="result ${type}">${message}</div>`;
+        }
+        
+        async function testHistoricalAPI() {
+            try {
+                const userData = localStorage.getItem('user');
+                if (!userData) {
+                    log('❌ No user found in localStorage.', 'error');
+                    return;
+                }
+                
+                const user = JSON.parse(userData);
+                const token = btoa(JSON.stringify({ userId: user.id }));
+                
+                log('🔍 Testing Historical Data API...\n', 'info');
+                
+                const response = await fetch('/api/historical-data', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    
+                    log(`✅ Historical Data API Response:
+
+📊 Status: ${response.status}
+📋 Message: ${data.message}
+
+📈 Data Structure:
+- News Array: ${data.data?.news?.length || 0} items
+- Social Array: ${data.data?.social?.length || 0} items
+- Total News: ${data.data?.totalNews || 0}
+- Total Social: ${data.data?.totalSocial || 0}
+
+🔍 Full Response:
+${JSON.stringify(data, null, 2)}
+
+💡 The API is working but returning empty arrays.
+This means the historical_news_data and historical_social_data tables are empty.`, 'success');
+                } else {
+                    const errorText = await response.text();
+                    log(`❌ Historical Data API Failed:
+
+Status: ${response.status}
+Error: ${errorText}
+
+🔍 This indicates the server might not be running or there's an authentication issue.`, 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ Error testing Historical Data API: ${error.message}
+
+🔍 This usually indicates the server is not running.`, 'error');
+            }
+        }
+        
+        async function testMonitoringAPI() {
+            try {
+                const userData = localStorage.getItem('user');
+                if (!userData) {
+                    log('❌ No user found in localStorage.', 'error');
+                    return;
+                }
+                
+                const user = JSON.parse(userData);
+                const token = btoa(JSON.stringify({ userId: user.id }));
+                
+                log('🔍 Testing Monitoring Data API...\n', 'info');
+                
+                const response = await fetch('/api/data/monitoring', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const monitoringData = data.monitoringData || [];
+                    
+                    log(`✅ Monitoring Data API Response:
+
+📊 Status: ${response.status}
+📋 Message: ${data.message}
+
+📈 Data Structure:
+- Keywords Processed: ${monitoringData.length}
+- Total Articles: ${monitoringData.reduce((sum, item) => sum + (item.newsData?.results?.length || 0), 0)}
+- Total Social Posts: ${monitoringData.reduce((sum, item) => sum + (item.socialData?.data?.length || 0), 0)}
+
+🔍 Keywords Detail:
+${monitoringData.map(item => `- ${item.keyword}: ${item.newsData?.results?.length || 0} news, ${item.socialData?.data?.length || 0} social`).join('\n')}
+
+💡 Dashboard has data but historical tables are empty.
+This confirms the data exists in users.monitoringData but not in historical tables.`, 'success');
+                } else {
+                    const errorText = await response.text();
+                    log(`❌ Monitoring Data API Failed:
+
+Status: ${response.status}
+Error: ${errorText}`, 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ Error testing Monitoring Data API: ${error.message}`, 'error');
+            }
+        }
+        
+        async function checkDatabaseTables() {
+            try {
+                const userData = localStorage.getItem('user');
+                if (!userData) {
+                    log('❌ No user found in localStorage.', 'error');
+                    return;
+                }
+                
+                const user = JSON.parse(userData);
+                const token = btoa(JSON.stringify({ userId: user.id }));
+                
+                log('🔍 Checking database tables...\n', 'info');
+                
+                // Check historical news data
+                const newsResponse = await fetch('/api/historical-data?type=news&limit=5', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                // Check historical social data
+                const socialResponse = await fetch('/api/historical-data?type=social&limit=5', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                let report = '📊 Database Tables Check:\n\n';
+                
+                if (newsResponse.ok) {
+                    const newsData = await newsResponse.json();
+                    report += `📰 Historical News Data:\n`;
+                    report += `   - Status: ${newsResponse.status}\n`;
+                    report += `   - Articles Found: ${newsData.data?.news?.length || 0}\n`;
+                    report += `   - Total Count: ${newsData.data?.totalNews || 0}\n\n`;
+                } else {
+                    report += `❌ Historical News Data: Failed (${newsResponse.status})\n\n`;
+                }
+                
+                if (socialResponse.ok) {
+                    const socialData = await socialResponse.json();
+                    report += `📱 Historical Social Data:\n`;
+                    report += `   - Status: ${socialResponse.status}\n`;
+                    report += `   - Posts Found: ${socialData.data?.social?.length || 0}\n`;
+                    report += `   - Total Count: ${socialData.data?.totalSocial || 0}\n\n`;
+                } else {
+                    report += `❌ Historical Social Data: Failed (${socialResponse.status})\n\n`;
+                }
+                
+                report += `💡 Conclusion:\n`;
+                report += `The historical tables are empty, but the monitoring data exists.\n`;
+                report += `We need to migrate data from users.monitoringData to historical tables.`;
+                
+                log(report, 'warning');
+                
+            } catch (error) {
+                log(`❌ Error checking database tables: ${error.message}`, 'error');
+            }
+        }
+        
+        async function populateHistoricalTables() {
+            try {
+                const userData = localStorage.getItem('user');
+                if (!userData) {
+                    log('❌ No user found in localStorage.', 'error');
+                    return;
+                }
+                
+                const user = JSON.parse(userData);
+                const token = btoa(JSON.stringify({ userId: user.id }));
+                
+                log('🔄 Attempting to populate historical tables...\n', 'info');
+                
+                // Try the migration API
+                const migrationResponse = await fetch('/api/migrate-dashboard-to-historical', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (migrationResponse.ok) {
+                    const result = await migrationResponse.json();
+                    
+                    log(`✅ Migration Successful!
+
+📊 Migration Results:
+- Status: ${migrationResponse.status}
+- Message: ${result.message}
+- Migration Job ID: ${result.migrationJobId}
+
+📈 Data Migrated:
+- Keywords Processed: ${result.migratedData?.keywords || 0}
+- News Articles: ${result.migratedData?.newsArticles || 0}
+- Social Posts: ${result.migratedData?.socialPosts || 0}
+
+🎯 Now test the Historical Data page again!
+The historical tables should now have data.`, 'success');
+                } else {
+                    const errorData = await migrationResponse.json();
+                    
+                    log(`❌ Migration Failed:
+
+Status: ${migrationResponse.status}
+Error: ${errorData.error}
+
+🔍 This might indicate:
+- No monitoring data found for user
+- Database connection issues
+- Migration API not implemented
+
+💡 Alternative: Try triggering new data collection which saves to both locations.`, 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ Error populating historical tables: ${error.message}
+
+🔍 This usually indicates the server is not running or the migration API is not available.`, 'error');
+            }
+        }
+        
+        // Auto-create test user on page load
+        window.addEventListener('load', () => {
+            const testUser = {
+                id: 9,
+                name: "Test User",
+                email: "test@example.com",
+                plan: "pro",
+                status: "approved",
+                keywords: ["bmw", "artificial intelligence", "climate change"]
+            };
+            
+            localStorage.setItem('user', JSON.stringify(testUser));
+            
+            setTimeout(() => {
+                log('✅ Test user created automatically. Ready for API debugging!', 'success');
+            }, 500);
+        });
+    </script>
+</body>
+</html>

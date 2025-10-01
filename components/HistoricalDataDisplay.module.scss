@@ -1,0 +1,291 @@
+.historicalDataDisplay {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.stats {
+  display: flex;
+  gap: 24px;
+}
+
+.stat {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 8px 16px;
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.dataTypeFilter {
+  padding: 20px 24px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+.filterLabel {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: #374151;
+}
+
+.filterButtons {
+  display: flex;
+  gap: 12px;
+}
+
+.filterButton {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  color: #6b7280;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    border-color: #667eea;
+    color: #667eea;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+  }
+
+  &.active {
+    background: #667eea;
+    border-color: #667eea;
+    color: white;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  }
+}
+
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 60px 24px;
+  color: #6b7280;
+  font-size: 16px;
+}
+
+.error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 24px;
+  color: #ef4444;
+  font-size: 16px;
+  background: #fef2f2;
+}
+
+.dataContainer {
+  padding: 24px;
+}
+
+.dataSection {
+  margin-bottom: 32px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.dataList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.dataItem {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px;
+  transition: all 0.3s ease;
+
+  &:hover {
+    border-color: #667eea;
+    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.1);
+    transform: translateY(-2px);
+  }
+}
+
+.itemHeader {
+  margin-bottom: 12px;
+}
+
+.itemTitle {
+  margin-bottom: 8px;
+}
+
+.itemLink {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+  text-decoration: none;
+  line-height: 1.4;
+
+  &:hover {
+    color: #667eea;
+    text-decoration: underline;
+  }
+}
+
+.itemMeta {
+  display: flex;
+  gap: 16px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.keyword {
+  background: #f3f4f6;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.source {
+  font-weight: 500;
+}
+
+.itemDescription {
+  margin-bottom: 16px;
+  color: #4b5563;
+  line-height: 1.6;
+  font-size: 14px;
+}
+
+.itemFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 12px;
+  border-top: 1px solid #f3f4f6;
+}
+
+.itemDates {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.publishedDate,
+.collectedDate {
+  font-weight: 500;
+}
+
+.sentiment {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 24px;
+  text-align: center;
+  color: #6b7280;
+
+  h3 {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 16px 0 8px;
+    color: #374151;
+  }
+
+  p {
+    font-size: 14px;
+    max-width: 400px;
+    line-height: 1.6;
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+  }
+
+  .stats {
+    align-self: stretch;
+    justify-content: space-between;
+  }
+
+  .filterButtons {
+    flex-direction: column;
+  }
+
+  .itemFooter {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .itemDates {
+    flex-direction: row;
+    gap: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dataContainer {
+    padding: 16px;
+  }
+
+  .dataItem {
+    padding: 16px;
+  }
+
+  .itemMeta {
+    flex-direction: column;
+    gap: 8px;
+  }
+}

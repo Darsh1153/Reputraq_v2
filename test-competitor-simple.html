@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Competitor Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
+        .result { margin: 10px 0; padding: 10px; border-radius: 4px; white-space: pre-wrap; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 4px; }
+        button:hover { background: #0056b3; }
+        input { padding: 8px; margin: 5px; border: 1px solid #ddd; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>🚀 Simple Competitor Test</h1>
+    
+    <div>
+        <h2>Test Competitor Data Collection</h2>
+        <input type="text" id="keyword" placeholder="Enter competitor keyword" value="Apple">
+        <button onclick="testCollection()">Collect Data</button>
+        <div id="result" class="result info">Ready to test...</div>
+    </div>
+
+    <div>
+        <h2>Test Data Retrieval</h2>
+        <input type="text" id="retrieveKeyword" placeholder="Enter keyword to retrieve" value="Apple">
+        <button onclick="testRetrieval()">Retrieve Data</button>
+        <div id="retrieveResult" class="result info">Ready to test retrieval...</div>
+    </div>
+
+    <script>
+        async function testCollection() {
+            const keyword = document.getElementById('keyword').value.trim();
+            if (!keyword) {
+                document.getElementById('result').textContent = 'Please enter a keyword';
+                document.getElementById('result').className = 'result error';
+                return;
+            }
+            
+            try {
+                // Get user from localStorage
+                const user = localStorage.getItem('user');
+                if (!user) {
+                    document.getElementById('result').textContent = 'Please sign in first';
+                    document.getElementById('result').className = 'result error';
+                    return;
+                }
+                
+                const userData = JSON.parse(user);
+                const token = btoa(JSON.stringify({ userId: userData.id }));
+                
+                document.getElementById('result').textContent = 'Collecting data...';
+                document.getElementById('result').className = 'result info';
+                
+                // Collect competitor data
+                const response = await fetch('/api/competitor-data/collect', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({ competitorKeyword: keyword }),
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    const resultText = `✅ COLLECTION SUCCESS!\n\n${data.message}\n\nArticles collected: ${data.articlesCollected}\nArticles inserted: ${data.articlesInserted}\nArticles stored: ${data.articlesStored}\nArticles returned: ${data.articles ? data.articles.length : 0}\n\nDebug Info:\n${JSON.stringify(data.debug, null, 2)}\n\nFirst Article:\n${data.articles && data.articles.length > 0 ? JSON.stringify(data.articles[0], null, 2) : 'No articles'}`;
+                    document.getElementById('result').textContent = resultText;
+                    document.getElementById('result').className = 'result success';
+                } else {
+                    const resultText = `❌ COLLECTION FAILED: ${data.error}\n\nDebug Info:\n${JSON.stringify(data.debug, null, 2)}`;
+                    document.getElementById('result').textContent = resultText;
+                    document.getElementById('result').className = 'result error';
+                }
+                
+            } catch (error) {
+                document.getElementById('result').textContent = `❌ ERROR: ${error.message}`;
+                document.getElementById('result').className = 'result error';
+            }
+        }
+
+        async function testRetrieval() {
+            const keyword = document.getElementById('retrieveKeyword').value.trim();
+            if (!keyword) {
+                document.getElementById('retrieveResult').textContent = 'Please enter a keyword';
+                document.getElementById('retrieveResult').className = 'result error';
+                return;
+            }
+            
+            try {
+                // Get user from localStorage
+                const user = localStorage.getItem('user');
+                if (!user) {
+                    document.getElementById('retrieveResult').textContent = 'Please sign in first';
+                    document.getElementById('retrieveResult').className = 'result error';
+                    return;
+                }
+                
+                const userData = JSON.parse(user);
+                const token = btoa(JSON.stringify({ userId: userData.id }));
+                
+                document.getElementById('retrieveResult').textContent = 'Retrieving data...';
+                document.getElementById('retrieveResult').className = 'result info';
+                
+                // Retrieve competitor data
+                const response = await fetch(`/api/news?userId=${userData.id}&keyword=${encodeURIComponent(keyword)}&limit=50`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    const resultText = `✅ RETRIEVAL SUCCESS!\n\nArticles found: ${data.articles ? data.articles.length : 0}\nPagination: ${JSON.stringify(data.pagination, null, 2)}\n\nFirst Article:\n${data.articles && data.articles.length > 0 ? JSON.stringify(data.articles[0], null, 2) : 'No articles found'}`;
+                    document.getElementById('retrieveResult').textContent = resultText;
+                    document.getElementById('retrieveResult').className = 'result success';
+                } else {
+                    const resultText = `❌ RETRIEVAL FAILED: ${data.error}`;
+                    document.getElementById('retrieveResult').textContent = resultText;
+                    document.getElementById('retrieveResult').className = 'result error';
+                }
+                
+            } catch (error) {
+                document.getElementById('retrieveResult').textContent = `❌ ERROR: ${error.message}`;
+                document.getElementById('retrieveResult').className = 'result error';
+            }
+        }
+        
+        // Check if user is signed in
+        window.onload = function() {
+            const user = localStorage.getItem('user');
+            if (!user) {
+                document.getElementById('result').textContent = '❌ Please sign in first to test competitor data collection';
+                document.getElementById('result').className = 'result error';
+                document.getElementById('retrieveResult').textContent = '❌ Please sign in first to test data retrieval';
+                document.getElementById('retrieveResult').className = 'result error';
+            } else {
+                const userData = JSON.parse(user);
+                document.getElementById('result').textContent = `✅ Signed in as: ${userData.name} (ID: ${userData.id})\nReady to test competitor data collection!`;
+                document.getElementById('result').className = 'result success';
+                document.getElementById('retrieveResult').textContent = `✅ Signed in as: ${userData.name} (ID: ${userData.id})\nReady to test data retrieval!`;
+                document.getElementById('retrieveResult').className = 'result success';
+            }
+        };
+    </script>
+</body>
+</html>
+</html>

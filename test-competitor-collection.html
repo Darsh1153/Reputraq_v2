@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Competitor Data Collection Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; }
+        .result { margin: 10px 0; padding: 10px; border-radius: 4px; white-space: pre-wrap; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 4px; }
+        button:hover { background: #0056b3; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        input, select { padding: 8px; margin: 5px; border: 1px solid #ddd; border-radius: 4px; }
+        .log { background: #f8f9fa; padding: 10px; border-radius: 4px; font-family: monospace; font-size: 12px; max-height: 200px; overflow-y: auto; }
+    </style>
+</head>
+<body>
+    <h1>🚀 Competitor Data Collection Test</h1>
+    
+    <div class="section">
+        <h2>📊 Current Status</h2>
+        <div id="status" class="result info">Ready to test competitor data collection...</div>
+    </div>
+    
+    <div class="section">
+        <h2>🔑 Authentication Test</h2>
+        <button onclick="testAuth()">Test Authentication</button>
+        <div id="authResult" class="result"></div>
+    </div>
+    
+    <div class="section">
+        <h2>📝 Competitor Keywords</h2>
+        <button onclick="fetchCompetitorKeywords()">Fetch Competitor Keywords</button>
+        <div id="keywordsResult" class="result"></div>
+    </div>
+    
+    <div class="section">
+        <h2>🚀 Data Collection Test</h2>
+        <select id="keywordSelect">
+            <option value="">Select Competitor Keyword</option>
+        </select>
+        <button onclick="collectData()" id="collectBtn">Collect Competitor Data</button>
+        <div id="collectResult" class="result"></div>
+    </div>
+    
+    <div class="section">
+        <h2>📋 All Tests</h2>
+        <button onclick="runAllTests()">Run All Tests</button>
+        <div id="allResults" class="result"></div>
+    </div>
+    
+    <div class="section">
+        <h2>📝 Debug Log</h2>
+        <div id="debugLog" class="log"></div>
+        <button onclick="clearLog()">Clear Log</button>
+    </div>
+
+    <script>
+        let debugLog = [];
+        let competitorKeywords = [];
+        
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            debugLog.push(`[${timestamp}] ${message}`);
+            document.getElementById('debugLog').textContent = debugLog.join('\n');
+            console.log(message);
+        }
+        
+        function clearLog() {
+            debugLog = [];
+            document.getElementById('debugLog').textContent = '';
+        }
+        
+        function setResult(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `result ${type}`;
+        }
+        
+        function testAuth() {
+            log('🔑 Testing authentication...');
+            
+            try {
+                const user = localStorage.getItem('user');
+                if (!user) {
+                    setResult('authResult', '❌ No user found in localStorage. Please sign in first.', 'error');
+                    log('❌ No user found in localStorage');
+                    return;
+                }
+                
+                const userData = JSON.parse(user);
+                log(`✅ User found: ${JSON.stringify(userData)}`);
+                
+                const token = btoa(JSON.stringify({ userId: userData.id }));
+                log(`🔑 Auth token created: ${token}`);
+                
+                setResult('authResult', `✅ Authentication successful!\nUser: ${userData.name} (ID: ${userData.id})`, 'success');
+                
+            } catch (error) {
+                setResult('authResult', `❌ Authentication failed: ${error.message}`, 'error');
+                log(`❌ Authentication error: ${error.message}`);
+            }
+        }
+        
+        async function fetchCompetitorKeywords() {
+            log('📝 Fetching competitor keywords...');
+            
+            try {
+                const user = localStorage.getItem('user');
+                if (!user) {
+                    setResult('keywordsResult', '❌ No user found. Please sign in first.', 'error');
+                    return;
+                }
+                
+                const userData = JSON.parse(user);
+                const token = btoa(JSON.stringify({ userId: userData.id }));
+                
+                const response = await fetch('/api/competitor-keywords', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                const data = await response.json();
+                log(`📊 Keywords response: ${JSON.stringify(data)}`);
+                
+                if (response.ok) {
+                    competitorKeywords = data;
+                    updateKeywordSelect();
+                    setResult('keywordsResult', `✅ Found ${data.length} competitor keywords:\n${data.map(k => k.keyword).join(', ')}`, 'success');
+                } else {
+                    setResult('keywordsResult', `❌ Failed to fetch keywords (${response.status}): ${JSON.stringify(data)}`, 'error');
+                }
+            } catch (error) {
+                setResult('keywordsResult', `❌ Error: ${error.message}`, 'error');
+                log(`❌ Error: ${error.message}`);
+            }
+        }
+        
+        function updateKeywordSelect() {
+            const select = document.getElementById('keywordSelect');
+            select.innerHTML = '<option value="">Select Competitor Keyword</option>';
+            
+            competitorKeywords.forEach(keyword => {
+                const option = document.createElement('option');
+                option.value = keyword.keyword;
+                option.textContent = keyword.keyword;
+                select.appendChild(option);
+            });
+        }
+        
+        async function collectData() {
+            const selectedKeyword = document.getElementById('keywordSelect').value;
+            const collectBtn = document.getElementById('collectBtn');
+            
+            if (!selectedKeyword) {
+                setResult('collectResult', '❌ Please select a competitor keyword first', 'error');
+                return;
+            }
+            
+            log(`🚀 Collecting data for competitor: ${selectedKeyword}`);
+            collectBtn.disabled = true;
+            collectBtn.textContent = 'Collecting...';
+            
+            try {
+                const user = localStorage.getItem('user');
+                if (!user) {
+                    setResult('collectResult', '❌ No user found. Please sign in first.', 'error');
+                    return;
+                }
+                
+                const userData = JSON.parse(user);
+                const token = btoa(JSON.stringify({ userId: userData.id }));
+                
+                const response = await fetch('/api/competitor-data/collect', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ competitorKeyword: selectedKeyword })
+                });
+                
+                const data = await response.json();
+                log(`📊 Collection response: ${JSON.stringify(data)}`);
+                
+                if (response.ok) {
+                    setResult('collectResult', `✅ Data collection successful!\n${data.message}\nArticles collected: ${data.articlesCollected}\nArticles stored: ${data.articlesStored}`, 'success');
+                } else {
+                    setResult('collectResult', `❌ Collection failed (${response.status}): ${JSON.stringify(data)}`, 'error');
+                }
+            } catch (error) {
+                setResult('collectResult', `❌ Error: ${error.message}`, 'error');
+                log(`❌ Error: ${error.message}`);
+            } finally {
+                collectBtn.disabled = false;
+                collectBtn.textContent = 'Collect Competitor Data';
+            }
+        }
+        
+        async function runAllTests() {
+            log('🚀 Running all tests...');
+            
+            await testAuth();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await fetchCompetitorKeywords();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            log('✅ All tests completed');
+        }
+        
+        // Auto-run tests on page load
+        window.onload = function() {
+            log('🚀 Page loaded, starting tests...');
+            testAuth();
+        };
+    </script>
+</body>
+</html>

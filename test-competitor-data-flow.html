@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Competitor Data Flow Debug Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 1000px; margin: 0 auto; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; }
+        .result { margin: 10px 0; padding: 10px; border-radius: 4px; white-space: pre-wrap; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 4px; }
+        button:hover { background: #0056b3; }
+        input { padding: 8px; margin: 5px; border: 1px solid #ddd; border-radius: 4px; }
+        .log { background: #f8f9fa; padding: 10px; border-radius: 4px; font-family: monospace; font-size: 12px; max-height: 300px; overflow-y: auto; }
+        .step { margin: 10px 0; padding: 10px; border-left: 4px solid #007bff; background: #f8f9fa; }
+        .step.success { border-left-color: #28a745; }
+        .step.error { border-left-color: #dc3545; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Competitor Data Flow Debug Test</h1>
+    
+    <div class="section">
+        <h2>📊 Current Status</h2>
+        <div id="status" class="result info">Ready to test competitor data flow...</div>
+    </div>
+    
+    <div class="section">
+        <h2>🔑 Step 1: Authentication</h2>
+        <button onclick="testAuth()">Test Authentication</button>
+        <div id="authResult" class="result"></div>
+    </div>
+    
+    <div class="section">
+        <h2>📋 Step 2: Check Competitor Keywords</h2>
+        <button onclick="checkCompetitorKeywords()">Check Competitor Keywords</button>
+        <div id="keywordsResult" class="result"></div>
+    </div>
+    
+    <div class="section">
+        <h2>📡 Step 3: Test Data Collection</h2>
+        <input type="text" id="competitorKeyword" placeholder="Enter competitor keyword" value="Apple">
+        <button onclick="testDataCollection()">Collect Data</button>
+        <div id="collectionResult" class="result"></div>
+    </div>
+    
+    <div class="section">
+        <h2>📰 Step 4: Test Data Retrieval</h2>
+        <input type="text" id="retrieveKeyword" placeholder="Enter keyword to retrieve" value="Apple">
+        <button onclick="testDataRetrieval()">Retrieve Data</button>
+        <div id="retrievalResult" class="result"></div>
+    </div>
+    
+    <div class="section">
+        <h2>🔄 Step 5: Full Flow Test</h2>
+        <button onclick="runFullFlowTest()">Run Complete Flow Test</button>
+        <div id="flowResult" class="result"></div>
+    </div>
+    
+    <div class="section">
+        <h2>📝 Debug Log</h2>
+        <div id="debugLog" class="log"></div>
+        <button onclick="clearLog()">Clear Log</button>
+    </div>
+
+    <script>
+        let debugLog = [];
+        let currentUser = null;
+        let authToken = null;
+        
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            debugLog.push(`[${timestamp}] ${message}`);
+            document.getElementById('debugLog').textContent = debugLog.join('\n');
+            console.log(message);
+        }
+        
+        function clearLog() {
+            debugLog = [];
+            document.getElementById('debugLog').textContent = '';
+        }
+        
+        function updateStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.className = `result ${type}`;
+        }
+        
+        function setResult(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `result ${type}`;
+        }
+        
+        function testAuth() {
+            log('🔑 Testing authentication...');
+            
+            try {
+                const user = localStorage.getItem('user');
+                if (!user) {
+                    setResult('authResult', '❌ No user found in localStorage. Please sign in first.', 'error');
+                    log('❌ No user found in localStorage');
+                    return false;
+                }
+                
+                currentUser = JSON.parse(user);
+                log(`✅ User found: ${JSON.stringify(currentUser)}`);
+                
+                authToken = btoa(JSON.stringify({ userId: currentUser.id }));
+                log(`🔑 Auth token created: ${authToken}`);
+                
+                setResult('authResult', `✅ Authentication successful!\nUser: ${currentUser.name} (ID: ${currentUser.id})`, 'success');
+                return true;
+                
+            } catch (error) {
+                setResult('authResult', `❌ Authentication failed: ${error.message}`, 'error');
+                log(`❌ Authentication error: ${error.message}`);
+                return false;
+            }
+        }
+        
+        async function checkCompetitorKeywords() {
+            log('📋 Checking competitor keywords...');
+            
+            if (!currentUser || !authToken) {
+                setResult('keywordsResult', '❌ Please authenticate first', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/competitor-keywords', {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                    },
+                });
+                
+                log(`📊 Keywords response status: ${response.status}`);
+                
+                const data = await response.json();
+                log(`📊 Keywords response data: ${JSON.stringify(data)}`);
+                
+                if (response.ok) {
+                    setResult('keywordsResult', `✅ Found ${data.length} competitor keywords:\n${JSON.stringify(data, null, 2)}`, 'success');
+                    return data;
+                } else {
+                    setResult('keywordsResult', `❌ Failed to fetch keywords (${response.status}):\n${JSON.stringify(data, null, 2)}`, 'error');
+                    return null;
+                }
+                
+            } catch (error) {
+                setResult('keywordsResult', `❌ Network error: ${error.message}`, 'error');
+                log(`❌ Network error: ${error.message}`);
+                return null;
+            }
+        }
+        
+        async function testDataCollection() {
+            log('📡 Testing data collection...');
+            
+            if (!currentUser || !authToken) {
+                setResult('collectionResult', '❌ Please authenticate first', 'error');
+                return;
+            }
+            
+            const keyword = document.getElementById('competitorKeyword').value.trim();
+            if (!keyword) {
+                setResult('collectionResult', '❌ Please enter a competitor keyword', 'error');
+                return;
+            }
+            
+            try {
+                log(`🚀 Collecting data for competitor: ${keyword}`);
+                
+                const response = await fetch('/api/competitor-data/collect', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`,
+                    },
+                    body: JSON.stringify({ competitorKeyword: keyword }),
+                });
+                
+                log(`📊 Collection response status: ${response.status}`);
+                
+                const data = await response.json();
+                log(`📊 Collection response data: ${JSON.stringify(data)}`);
+                
+                if (response.ok) {
+                    setResult('collectionResult', `✅ Data collection successful!\nArticles collected: ${data.articlesCollected}\nArticles stored: ${data.articlesStored}\n\nResponse: ${JSON.stringify(data, null, 2)}`, 'success');
+                    return data;
+                } else {
+                    setResult('collectionResult', `❌ Data collection failed (${response.status}):\n${JSON.stringify(data, null, 2)}`, 'error');
+                    return null;
+                }
+                
+            } catch (error) {
+                setResult('collectionResult', `❌ Network error: ${error.message}`, 'error');
+                log(`❌ Network error: ${error.message}`);
+                return null;
+            }
+        }
+        
+        async function testDataRetrieval() {
+            log('📰 Testing data retrieval...');
+            
+            if (!currentUser || !authToken) {
+                setResult('retrievalResult', '❌ Please authenticate first', 'error');
+                return;
+            }
+            
+            const keyword = document.getElementById('retrieveKeyword').value.trim();
+            if (!keyword) {
+                setResult('retrievalResult', '❌ Please enter a keyword to retrieve', 'error');
+                return;
+            }
+            
+            try {
+                log(`📰 Retrieving articles for keyword: ${keyword}`);
+                
+                const response = await fetch(`/api/news?userId=${currentUser.id}&keyword=${encodeURIComponent(keyword)}&limit=50`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                    },
+                });
+                
+                log(`📊 Retrieval response status: ${response.status}`);
+                
+                const data = await response.json();
+                log(`📊 Retrieval response data: ${JSON.stringify(data)}`);
+                
+                if (response.ok) {
+                    const articleCount = data.articles ? data.articles.length : 0;
+                    setResult('retrievalResult', `✅ Data retrieval successful!\nFound ${articleCount} articles for keyword "${keyword}"\n\nResponse: ${JSON.stringify(data, null, 2)}`, 'success');
+                    return data;
+                } else {
+                    setResult('retrievalResult', `❌ Data retrieval failed (${response.status}):\n${JSON.stringify(data, null, 2)}`, 'error');
+                    return null;
+                }
+                
+            } catch (error) {
+                setResult('retrievalResult', `❌ Network error: ${error.message}`, 'error');
+                log(`❌ Network error: ${error.message}`);
+                return null;
+            }
+        }
+        
+        async function runFullFlowTest() {
+            log('🔄 Running full flow test...');
+            updateStatus('Running full flow test...', 'info');
+            
+            // Step 1: Authentication
+            const authSuccess = testAuth();
+            if (!authSuccess) {
+                setResult('flowResult', '❌ Authentication failed - stopping test', 'error');
+                return;
+            }
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Step 2: Check competitor keywords
+            const keywords = await checkCompetitorKeywords();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            // Step 3: Test data collection
+            const collectionResult = await testDataCollection();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // Step 4: Test data retrieval
+            const retrievalResult = await testDataRetrieval();
+            
+            // Summary
+            let summary = '🔄 Full Flow Test Summary:\n\n';
+            summary += `✅ Authentication: ${authSuccess ? 'PASSED' : 'FAILED'}\n`;
+            summary += `✅ Keywords Check: ${keywords ? 'PASSED' : 'FAILED'}\n`;
+            summary += `✅ Data Collection: ${collectionResult ? 'PASSED' : 'FAILED'}\n`;
+            summary += `✅ Data Retrieval: ${retrievalResult ? 'PASSED' : 'FAILED'}\n\n`;
+            
+            if (collectionResult && retrievalResult) {
+                const articlesCollected = collectionResult.articlesCollected || 0;
+                const articlesRetrieved = retrievalResult.articles ? retrievalResult.articles.length : 0;
+                
+                summary += `📊 Data Flow Analysis:\n`;
+                summary += `- Articles collected: ${articlesCollected}\n`;
+                summary += `- Articles retrieved: ${articlesRetrieved}\n`;
+                
+                if (articlesCollected > 0 && articlesRetrieved === 0) {
+                    summary += `\n❌ ISSUE FOUND: Data was collected but not retrieved!\n`;
+                    summary += `This suggests a problem with the data storage or retrieval process.`;
+                } else if (articlesCollected === articlesRetrieved) {
+                    summary += `\n✅ Data flow is working correctly!`;
+                } else {
+                    summary += `\n⚠️ Partial data flow - some articles may not be retrieved.`;
+                }
+            }
+            
+            setResult('flowResult', summary, collectionResult && retrievalResult ? 'success' : 'error');
+            updateStatus('Full flow test completed!', collectionResult && retrievalResult ? 'success' : 'error');
+        }
+        
+        // Auto-run authentication test on page load
+        window.onload = function() {
+            log('🚀 Page loaded, ready for testing...');
+            testAuth();
+        };
+    </script>
+</body>
+</html>

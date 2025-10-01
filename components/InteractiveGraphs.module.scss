@@ -1,0 +1,447 @@
+.graphsContainer {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.graphCard {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.8));
+  padding: var(--space-6);
+  border-radius: var(--radius-2xl);
+  box-shadow: 0 8px 32px rgba(0, 147, 221, 0.1);
+  border: 1px solid rgba(0, 147, 221, 0.1);
+  transition: all var(--transition-base);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 48px rgba(0, 147, 221, 0.15);
+    border-color: rgba(0, 147, 221, 0.2);
+  }
+}
+
+.graphHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.graphTitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0;
+}
+
+// Pie Chart Styles
+.pieChart {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.pieChartContainer {
+  position: relative;
+  width: 200px;
+  height: 200px;
+}
+
+.pieChartSvg {
+  width: 100%;
+  height: 100%;
+}
+
+.pieSvg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.pieSlice {
+  transition: all 0.3s ease;
+  cursor: pointer;
+
+  &:hover {
+    stroke-width: 25;
+  }
+}
+
+.pieCenter {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+.pieCenterNumber {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1f2937;
+  line-height: 1;
+}
+
+.pieCenterLabel {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin-top: 0.25rem;
+}
+
+.pieLegend {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.legendColor {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+// Line Chart Styles
+.lineChart {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.lineChartContainer {
+  width: 100%;
+  height: 200px;
+}
+
+.lineSvg {
+  width: 100%;
+  height: 100%;
+}
+
+.linePath {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: all 0.3s ease;
+}
+
+.lineArea {
+  transition: all 0.3s ease;
+}
+
+.dataPoint {
+  transition: all 0.3s ease;
+  cursor: pointer;
+
+  &:hover {
+    r: 6;
+    fill: #4f46e5;
+  }
+}
+
+.lineChartLabels {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 1rem;
+}
+
+.lineLabel {
+  font-size: 0.75rem;
+  color: #6b7280;
+  text-align: center;
+}
+
+// Bar Chart Styles
+.barChart {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.barChartContainer {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  height: 200px;
+  padding: 0 1rem;
+  gap: 0.5rem;
+}
+
+.barGroup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  gap: 0.5rem;
+}
+
+.barValue {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.bar {
+  width: 100%;
+  min-height: 4px;
+  border-radius: 4px 4px 0 0;
+  transition: all 0.3s ease;
+  cursor: pointer;
+
+  &:hover {
+    opacity: 0.8;
+    transform: scaleY(1.05);
+  }
+}
+
+.barLabel {
+  font-size: 0.7rem;
+  color: #6b7280;
+  text-align: center;
+  word-break: break-word;
+  line-height: 1.2;
+}
+
+// Radar Chart Styles
+.radarChart {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.radarChartContainer {
+  width: 100%;
+  height: 300px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.radarSvg {
+  width: 100%;
+  height: 100%;
+}
+
+.radarArea {
+  transition: all 0.3s ease;
+}
+
+.radarPoint {
+  transition: all 0.3s ease;
+  cursor: pointer;
+
+  &:hover {
+    r: 6;
+    fill: #4f46e5;
+  }
+}
+
+.radarLabels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: center;
+}
+
+.radarLabel {
+  font-size: 0.75rem;
+  color: #6b7280;
+  background: #f9fafb;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  border: 1px solid #e5e7eb;
+}
+
+// Donut Chart Styles
+.donutChart {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.donutChartContainer {
+  position: relative;
+  width: 200px;
+  height: 200px;
+}
+
+.donutSvg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.donutSlice {
+  transition: all 0.3s ease;
+  cursor: pointer;
+
+  &:hover {
+    stroke-width: 25;
+  }
+}
+
+.donutCenter {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+.donutCenterNumber {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1f2937;
+  line-height: 1;
+}
+
+.donutCenterLabel {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin-top: 0.25rem;
+}
+
+.donutLegend {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+// Horizontal Bar Chart Styles
+.horizontalBarChart {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.horizontalBarGroup {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.horizontalBarLabel {
+  font-size: 0.875rem;
+  color: #6b7280;
+  min-width: 120px;
+  text-align: right;
+}
+
+.horizontalBarContainer {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  height: 24px;
+}
+
+.horizontalBar {
+  height: 100%;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+
+  &:hover {
+    opacity: 0.8;
+    transform: scaleX(1.02);
+  }
+}
+
+.horizontalBarValue {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #1f2937;
+  min-width: 30px;
+  text-align: right;
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .graphsContainer {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .graphCard {
+    padding: 1rem;
+  }
+
+  .pieChartContainer,
+  .donutChartContainer {
+    width: 150px;
+    height: 150px;
+  }
+
+  .pieCenterNumber,
+  .donutCenterNumber {
+    font-size: 1.5rem;
+  }
+
+  .radarChartContainer {
+    height: 250px;
+  }
+
+  .barChartContainer {
+    height: 150px;
+  }
+
+  .lineChartContainer {
+    height: 150px;
+  }
+
+  .horizontalBarGroup {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .horizontalBarLabel {
+    min-width: auto;
+    text-align: left;
+  }
+}
+
+@media (max-width: 480px) {
+  .graphsContainer {
+    grid-template-columns: 1fr;
+  }
+
+  .graphCard {
+    padding: 0.75rem;
+  }
+
+  .graphTitle {
+    font-size: 1.1rem;
+  }
+
+  .pieChartContainer,
+  .donutChartContainer {
+    width: 120px;
+    height: 120px;
+  }
+
+  .pieCenterNumber,
+  .donutCenterNumber {
+    font-size: 1.25rem;
+  }
+
+  .radarChartContainer {
+    height: 200px;
+  }
+}

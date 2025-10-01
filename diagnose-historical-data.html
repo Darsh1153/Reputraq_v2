@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnose Historical Data Issue</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .status {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+            width: 100%;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .step {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #007bff;
+        }
+        .step h4 {
+            margin: 0 0 5px 0;
+            color: #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Diagnose Historical Data Issue</h1>
+        
+        <div class="status warning">
+            <strong>🎯 Issue:</strong> Historical Data page shows "No Data Found" even after the fix was applied.
+        </div>
+        
+        <div class="test-section">
+            <h3>📋 Diagnostic Steps:</h3>
+            <p>Let's systematically check each part of the data flow to identify where the issue is.</p>
+            
+            <div class="step">
+                <h4>Step 1: Check User & Keywords</h4>
+                <p>Verify user exists and has keywords configured.</p>
+                <button onclick="checkUserAndKeywords()">Check User & Keywords</button>
+            </div>
+            
+            <div class="step">
+                <h4>Step 2: Check Dashboard Data</h4>
+                <p>Verify data exists in the dashboard (monitoringData).</p>
+                <button onclick="checkDashboardData()">Check Dashboard Data</button>
+            </div>
+            
+            <div class="step">
+                <h4>Step 3: Trigger Data Collection</h4>
+                <p>Manually trigger data collection to populate historical tables.</p>
+                <button onclick="triggerDataCollection()">Trigger Data Collection</button>
+            </div>
+            
+            <div class="step">
+                <h4>Step 4: Check Historical Data API</h4>
+                <p>Verify historical data API returns data.</p>
+                <button onclick="checkHistoricalDataAPI()">Check Historical Data API</button>
+            </div>
+            
+            <div class="step">
+                <h4>Step 5: Test Historical Data Page</h4>
+                <p>Open the historical data page and check for data.</p>
+                <button onclick="testHistoricalDataPage()">Test Historical Data Page</button>
+            </div>
+            
+            <div class="step">
+                <h4>Step 6: Full Diagnostic</h4>
+                <p>Run all checks in sequence to get a complete picture.</p>
+                <button onclick="runFullDiagnostic()">Run Full Diagnostic</button>
+            </div>
+        </div>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `<div class="result ${type}">${message}</div>`;
+        }
+        
+        async function checkUserAndKeywords() {
+            try {
+                const userData = localStorage.getItem('user');
+                if (!userData) {
+                    log('❌ No user found in localStorage. Please create a test user first.', 'error');
+                    return;
+                }
+                
+                const user = JSON.parse(userData);
+                const token = btoa(JSON.stringify({ userId: user.id }));
+                
+                log('🔍 Checking user and keywords...\n', 'info');
+                
+                // Check keywords API
+                const keywordsResponse = await fetch('/api/keywords', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                let report = '👤 User & Keywords Check:\n\n';
+                report += `✅ User in localStorage:\n`;
+                report += `   - ID: ${user.id}\n`;
+                report += `   - Name: ${user.name}\n`;
+                report += `   - Email: ${user.email}\n`;
+                report += `   - Keywords: ${user.keywords?.join(', ') || 'None'}\n\n`;
+                
+                if (keywordsResponse.ok) {
+                    const keywords = await keywordsResponse.json();
+                    report += `✅ Keywords from API:\n`;
+                    report += `   - Count: ${keywords.length}\n`;
+                    report += `   - Keywords: ${keywords.map(k => k.keyword).join(', ')}\n\n`;
+                } else {
+                    report += `❌ Keywords API failed:\n`;
+                    report += `   - Status: ${keywordsResponse.status}\n`;
+                    report += `   - Error: ${await keywordsResponse.text()}\n\n`;
+                }
+                
+                report += `🎯 Expected: User should have at least one keyword configured.`;
+                
+                log(report, keywordsResponse.ok ? 'success' : 'error');
+                
+            } catch (error) {
+                log(`❌ Error checking user and keywords: ${error.message}`, 'error');
+            }
+        }
+        
+        async function checkDashboardData() {
+            try {
+                const userData = localStorage.getItem('user');
+                if (!userData) {
+                    log('❌ No user found in localStorage.', 'error');
+                    return;
+                }
+                
+                const user = JSON.parse(userData);
+                const token = btoa(JSON.stringify({ userId: user.id }));
+                
+                log('🔍 Checking dashboard data...\n', 'info');
+                
+                const response = await fetch('/api/data/monitoring', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const monitoringData = data.monitoringData || [];
+                    
+                    let report = '📊 Dashboard Data Check:\n\n';
+                    report += `✅ Monitoring Data Found:\n`;
+                    report += `   - Keywords Processed: ${monitoringData.length}\n`;
+                    
+                    let totalNews = 0;
+                    let totalSocial = 0;
+                    
+                    for (const item of monitoringData) {
+                        const newsCount = item.newsData?.results?.length || 0;
+                        const socialCount = item.socialData?.data?.length || 0;
+                        totalNews += newsCount;
+                        totalSocial += socialCount;
+                        
+                        report += `   - ${item.keyword}: ${newsCount} news, ${socialCount} social\n`;
+                    }
+                    
+                    report += `\n📈 Totals:\n`;
+                    report += `   - Total News Articles: ${totalNews}\n`;
+                    report += `   - Total Social Posts: ${totalSocial}\n\n`;
+                    
+                    if (totalNews > 0 || totalSocial > 0) {
+                        report += `✅ Dashboard has data! This should appear in Historical Data page.\n`;
+                        report += `💡 If Historical Data page shows "No Data Found", the issue is in data storage or retrieval.`;
+                        log(report, 'success');
+                    } else {
+                        report += `❌ Dashboard has no data. Need to trigger data collection.`;
+                        log(report, 'warning');
+                    }
+                } else {
+                    log(`❌ Dashboard data check failed: ${response.status} - ${await response.text()}`, 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ Error checking dashboard data: ${error.message}`, 'error');
+            }
+        }
+        
+        async function triggerDataCollection() {
+            try {
+                const userData = localStorage.getItem('user');
+                if (!userData) {
+                    log('❌ No user found in localStorage.', 'error');
+                    return;
+                }
+                
+                const user = JSON.parse(userData);
+                const token = btoa(JSON.stringify({ userId: user.id }));
+                
+                log('🚀 Triggering data collection...\n', 'info');
+                
+                const response = await fetch('/api/data/collect', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    log(`✅ Data Collection Successful!
+
+📊 Collection Results:
+- Status: ${response.status}
+- Message: ${result.message}
+- Collection Job ID: ${result.collectionJobId}
+- Keywords Processed: ${result.data?.length || 0}
+
+📋 Data Storage:
+✅ Dashboard Data: Updated in users.monitoringData
+✅ Historical News: Saved to historical_news_data table
+✅ Historical Social: Saved to historical_social_data table
+✅ Collection Job: Recorded in data_collection_jobs table
+
+🎯 Now check the Historical Data page - it should show data!`, 'success');
+                } else {
+                    const errorData = await response.json();
+                    log(`❌ Data Collection Failed!
+
+Status: ${response.status}
+Error: ${errorData.error}
+
+🔍 Possible Issues:
+- Server not running
+- No keywords configured
+- Database connection issues
+- API endpoint problems
+
+💡 Check the server console for detailed error messages.`, 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ Error triggering data collection: ${error.message}
+
+🔍 This usually indicates:
+- Server is not running (npm run dev)
+- Network connectivity issues
+- CORS issues
+
+💡 Make sure the development server is running!`, 'error');
+            }
+        }
+        
+        async function checkHistoricalDataAPI() {
+            try {
+                const userData = localStorage.getItem('user');
+                if (!userData) {
+                    log('❌ No user found in localStorage.', 'error');
+                    return;
+                }
+                
+                const user = JSON.parse(userData);
+                const token = btoa(JSON.stringify({ userId: user.id }));
+                
+                log('🔍 Checking historical data API...\n', 'info');
+                
+                // Test with last 30 days
+                const today = new Date();
+                const thirtyDaysAgo = new Date();
+                thirtyDaysAgo.setDate(today.getDate() - 30);
+                
+                const params = new URLSearchParams({
+                    startDate: thirtyDaysAgo.toISOString().split('T')[0],
+                    endDate: today.toISOString().split('T')[0],
+                    type: 'all',
+                    limit: '100'
+                });
+                
+                const response = await fetch(`/api/historical-data?${params}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const historicalData = data.data || {};
+                    
+                    let report = '📊 Historical Data API Check:\n\n';
+                    report += `✅ API Response:\n`;
+                    report += `   - Status: ${response.status}\n`;
+                    report += `   - Message: ${data.message}\n\n`;
+                    
+                    report += `📈 Data Found:\n`;
+                    report += `   - News Articles: ${historicalData.news?.length || 0}\n`;
+                    report += `   - Social Posts: ${historicalData.social?.length || 0}\n`;
+                    report += `   - Total News: ${historicalData.totalNews || 0}\n`;
+                    report += `   - Total Social: ${historicalData.totalSocial || 0}\n\n`;
+                    
+                    if ((historicalData.news?.length || 0) > 0 || (historicalData.social?.length || 0) > 0) {
+                        report += `✅ Historical Data API has data!\n`;
+                        report += `💡 The Historical Data page should display this data.\n`;
+                        report += `🔍 If the page still shows "No Data Found", check the UI component.`;
+                        log(report, 'success');
+                    } else {
+                        report += `❌ Historical Data API has no data.\n`;
+                        report += `💡 This means data collection didn't save to historical tables.\n`;
+                        report += `🔍 Check the data collection process and database.`;
+                        log(report, 'warning');
+                    }
+                } else {
+                    const errorData = await response.json();
+                    log(`❌ Historical Data API Failed!
+
+Status: ${response.status}
+Error: ${errorData.error}
+
+🔍 This might indicate:
+- Database connection issues
+- SQL query problems
+- Authentication issues
+- Server not running
+
+💡 Check the server console for detailed error messages.`, 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ Error checking historical data API: ${error.message}
+
+🔍 This usually indicates:
+- Server is not running
+- Network connectivity issues
+- CORS issues
+
+💡 Make sure the development server is running!`, 'error');
+            }
+        }
+        
+        function testHistoricalDataPage() {
+            const url = window.location.origin + '/dashboard/historical';
+            window.open(url, '_blank');
+            
+            log(`🚀 Historical Data Page opened: ${url}
+
+📋 What to Check:
+1. Page loads without errors
+2. No flickering between loading states
+3. Data appears in the Historical Data tab
+4. Date range filters work
+5. Keyword filters work
+
+🔍 Expected Results:
+- If data collection was successful, you should see articles/posts
+- If no data, you'll see "No Data Found" message
+- Date range should default to last 30 days
+- Filtering options should be available
+
+💡 If you still see "No Data Found":
+1. Make sure you ran "Trigger Data Collection" first
+2. Check that the server is running
+3. Verify the data collection was successful
+4. Check browser console for any errors`, 'info');
+        }
+        
+        async function runFullDiagnostic() {
+            log('🔍 Running full diagnostic...\n', 'info');
+            
+            // Step 1: Check user and keywords
+            await checkUserAndKeywords();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // Step 2: Check dashboard data
+            await checkDashboardData();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            // Step 3: Check historical data API
+            await checkHistoricalDataAPI();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            log('\n🎯 Diagnostic Complete!\n\nNext Steps:\n1. If no data found, run "Trigger Data Collection"\n2. If data exists but page shows "No Data Found", check the UI component\n3. If API fails, check server console for errors', 'info');
+        }
+        
+        // Auto-create test user on page load
+        window.addEventListener('load', () => {
+            const testUser = {
+                id: 9,
+                name: "Test User",
+                email: "test@example.com",
+                plan: "pro",
+                status: "approved",
+                keywords: ["bmw", "artificial intelligence", "climate change"]
+            };
+            
+            localStorage.setItem('user', JSON.stringify(testUser));
+            
+            setTimeout(() => {
+                log('✅ Test user created automatically. Ready for diagnostic tests!', 'success');
+            }, 500);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Historical Data Fix</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .status {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+            width: 100%;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        .info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Test Historical Data Fix</h1>
+        
+        <div class="status success">
+            <strong>✅ SQL Query Fix Applied:</strong><br>
+            • Fixed "missing FROM-clause entry" error<br>
+            • Separated date filters for news and social data<br>
+            • Each table now uses its own collectedAt field<br>
+            • Historical data API should now work properly
+        </div>
+        
+        <div class="test-section">
+            <h3>🎯 The Problem:</h3>
+            <p>The SQL query was trying to reference <code>historical_news_data.collected_at</code> in a query that was only selecting from <code>historical_social_data</code> table, causing a "missing FROM-clause entry" error.</p>
+        </div>
+        
+        <div class="test-section">
+            <h3>✅ The Fix:</h3>
+            <p>Created separate date filters for news and social data queries:</p>
+            <ul>
+                <li><strong>News queries</strong> use <code>historicalNewsData.collectedAt</code></li>
+                <li><strong>Social queries</strong> use <code>historicalSocialData.collectedAt</code></li>
+                <li>Each table now has its own proper date filtering</li>
+            </ul>
+        </div>
+        
+        <div class="test-section">
+            <h3>🧪 Test the Fix:</h3>
+            <p>Test the historical data functionality to ensure the SQL error is resolved.</p>
+            <div class="button-group">
+                <button onclick="createTestUser()">Create Test User</button>
+                <button onclick="testHistoricalDataAPI()">Test Historical Data API</button>
+                <button onclick="testHistoricalDataPage()">Test Historical Data Page</button>
+                <button onclick="testDataSummary()">Test Data Summary</button>
+            </div>
+        </div>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `<div class="result ${type}">${message}</div>`;
+        }
+        
+        function createTestUser() {
+            try {
+                const testUser = {
+                    id: 9,
+                    name: "Test User",
+                    email: "test@example.com",
+                    plan: "pro",
+                    status: "approved",
+                    keywords: ["bmw", "artificial intelligence", "climate change"]
+                };
+                
+                localStorage.setItem('user', JSON.stringify(testUser));
+                
+                log(`✅ Test user created successfully!
+
+👤 User Details:
+- ID: ${testUser.id}
+- Name: ${testUser.name}
+- Email: ${testUser.email}
+- Plan: ${testUser.plan}
+- Status: ${testUser.status}
+- Keywords: ${testUser.keywords.join(', ')}
+
+🎯 This user will be used to test the historical data API.`, 'success');
+                
+            } catch (error) {
+                log(`❌ Error creating test user: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testHistoricalDataAPI() {
+            try {
+                const userData = localStorage.getItem('user');
+                if (!userData) {
+                    log('❌ Please create test user first!', 'error');
+                    return;
+                }
+                
+                const user = JSON.parse(userData);
+                const token = btoa(JSON.stringify({ userId: user.id }));
+                
+                log('🧪 Testing Historical Data API...\n', 'info');
+                
+                // Test basic historical data fetch
+                const response = await fetch('/api/historical-data', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log(`✅ Historical Data API Test Successful!
+
+📊 Response:
+- Status: ${response.status}
+- News Articles: ${data.data?.news?.length || 0}
+- Social Posts: ${data.data?.social?.length || 0}
+- Total News: ${data.data?.totalNews || 0}
+- Total Social: ${data.data?.totalSocial || 0}
+- Message: ${data.message}
+
+🎯 The SQL query error should be fixed!
+The API is now properly separating news and social data queries.`, 'success');
+                } else {
+                    const errorData = await response.json();
+                    log(`❌ Historical Data API Test Failed!
+
+Status: ${response.status}
+Error: ${errorData.error}
+
+🔍 This might indicate the server is not running or there are other issues.`, 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ Error testing Historical Data API: ${error.message}
+
+🔍 This might indicate:
+- Server is not running
+- Network connectivity issues
+- CORS issues
+
+💡 Make sure the development server is running with: npm run dev`, 'error');
+            }
+        }
+        
+        function testHistoricalDataPage() {
+            const url = window.location.origin + '/dashboard/historical';
+            window.open(url, '_blank');
+            
+            log(`🚀 Historical Data Page opened: ${url}
+
+📋 Expected Results:
+1. Page should load without "Please sign in" message
+2. Historical Data tab should be visible
+3. No SQL query errors in browser console
+4. Data filtering options should work
+5. Date range picker should function properly
+
+🔍 Check browser console for any errors.
+The "missing FROM-clause entry" error should be resolved!`, 'info');
+        }
+        
+        async function testDataSummary() {
+            try {
+                const userData = localStorage.getItem('user');
+                if (!userData) {
+                    log('❌ Please create test user first!', 'error');
+                    return;
+                }
+                
+                const user = JSON.parse(userData);
+                const token = btoa(JSON.stringify({ userId: user.id }));
+                
+                log('🧪 Testing Data Summary API...\n', 'info');
+                
+                // Test data summary
+                const response = await fetch('/api/historical-data', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        action: 'getSummary',
+                        startDate: '2025-08-01',
+                        endDate: '2025-09-30'
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log(`✅ Data Summary API Test Successful!
+
+📊 Summary Response:
+- Status: ${response.status}
+- News Summary Items: ${data.summary?.news?.length || 0}
+- Social Summary Items: ${data.summary?.social?.length || 0}
+- Total News: ${data.summary?.totalNews || 0}
+- Total Social: ${data.summary?.totalSocial || 0}
+- Message: ${data.message}
+
+🎯 The summary queries are also fixed!
+Both news and social data summaries use proper table references.`, 'success');
+                } else {
+                    const errorData = await response.json();
+                    log(`❌ Data Summary API Test Failed!
+
+Status: ${response.status}
+Error: ${errorData.error}
+
+🔍 This might indicate the server is not running or there are other issues.`, 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ Error testing Data Summary API: ${error.message}
+
+🔍 This might indicate:
+- Server is not running
+- Network connectivity issues
+- CORS issues
+
+💡 Make sure the development server is running with: npm run dev`, 'error');
+            }
+        }
+        
+        // Auto-create test user on page load
+        window.addEventListener('load', () => {
+            setTimeout(createTestUser, 500);
+        });
+    </script>
+</body>
+</html>

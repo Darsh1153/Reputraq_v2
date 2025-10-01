@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fix Server & Historical Data</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .status {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+            width: 100%;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .step {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #007bff;
+        }
+        .step h4 {
+            margin: 0 0 5px 0;
+            color: #007bff;
+        }
+        .code-block {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 5px;
+            padding: 10px;
+            font-family: monospace;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Fix Server & Historical Data</h1>
+        
+        <div class="status error">
+            <strong>🎯 Root Cause Identified:</strong><br>
+            The server is not running due to Node.js version compatibility issues. This prevents the Historical Data page from fetching data.
+        </div>
+        
+        <div class="test-section">
+            <h3>🚨 Server Issue:</h3>
+            <p>The error <code>SyntaxError: Unexpected token '?'</code> indicates Node.js version incompatibility with Next.js 14.</p>
+            
+            <div class="step">
+                <h4>Option 1: Update Node.js (Recommended)</h4>
+                <p>Update Node.js to version 18.x.x or higher in WSL:</p>
+                <div class="code-block">
+# Check current Node.js version
+node --version
+
+# Update Node.js using NodeSource repository
+curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+sudo apt-get install -y nodejs
+
+# Verify installation
+node --version
+npm --version
+                </div>
+            </div>
+            
+            <div class="step">
+                <h4>Option 2: Downgrade Next.js (Quick Fix)</h4>
+                <p>Downgrade Next.js to a compatible version:</p>
+                <div class="code-block">
+# Install compatible Next.js version
+npm install next@13.5.6
+
+# Start the server
+npm run dev
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🧪 Test Server Status:</h3>
+            <p>Check if the server is running and APIs are accessible.</p>
+            <div class="button-group">
+                <button onclick="checkServerStatus()">Check Server Status</button>
+                <button onclick="testAPIEndpoints()">Test API Endpoints</button>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>📊 Historical Data Fallback:</h3>
+            <p>While fixing the server, let's create test data for the Historical Data page.</p>
+            <div class="button-group">
+                <button onclick="createTestUser()">Create Test User</button>
+                <button onclick="injectHistoricalTestData()">Inject Historical Test Data</button>
+                <button onclick="testHistoricalDataPage()">Test Historical Data Page</button>
+                <button onclick="simulateDataCollection()">Simulate Data Collection</button>
+            </div>
+        </div>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `<div class="result ${type}">${message}</div>`;
+        }
+        
+        function createTestUser() {
+            try {
+                const testUser = {
+                    id: 9,
+                    name: "Test User",
+                    email: "test@example.com",
+                    plan: "pro",
+                    status: "approved",
+                    keywords: ["bmw", "artificial intelligence", "climate change"]
+                };
+                
+                localStorage.setItem('user', JSON.stringify(testUser));
+                
+                log(`✅ Test user created successfully!
+
+👤 User Details:
+- ID: ${testUser.id}
+- Name: ${testUser.name}
+- Email: ${testUser.email}
+- Plan: ${testUser.plan}
+- Status: ${testUser.status}
+- Keywords: ${testUser.keywords.join(', ')}
+
+🎯 Ready for historical data testing.`, 'success');
+                
+            } catch (error) {
+                log(`❌ Error creating test user: ${error.message}`, 'error');
+            }
+        }
+        
+        function injectHistoricalTestData() {
+            try {
+                // Create comprehensive historical test data
+                const historicalTestData = [
+                    {
+                        keyword: "bmw",
+                        newsData: {
+                            results: [
+                                {
+                                    id: "bmw_news_1",
+                                    title: "BMW Unveils Revolutionary Electric Vehicle Technology",
+                                    description: "BMW has announced breakthrough battery technology that promises to revolutionize the electric vehicle market with 500-mile range capabilities.",
+                                    url: "https://example.com/bmw-electric-breakthrough",
+                                    publishedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+                                    source: { 
+                                        name: "Auto News Daily",
+                                        logo: "https://via.placeholder.com/50x50/007bff/ffffff?text=AND"
+                                    },
+                                    image: "https://via.placeholder.com/400x200/007bff/ffffff?text=BMW+Electric",
+                                    sentiment: { score: 25, label: "positive" },
+                                    readTime: 6,
+                                    isBreaking: true,
+                                    categories: ["Automotive", "Technology"],
+                                    topics: ["Electric Vehicles", "Innovation"],
+                                    engagement: { views: 1850, shares: 67, comments: 34 }
+                                },
+                                {
+                                    id: "bmw_news_2",
+                                    title: "BMW Reports Record Sales in Q4 2024",
+                                    description: "BMW has reported its highest quarterly sales figures in company history, driven by strong demand for luxury vehicles.",
+                                    url: "https://example.com/bmw-record-sales",
+                                    publishedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+                                    source: { 
+                                        name: "Business Automotive",
+                                        logo: "https://via.placeholder.com/50x50/28a745/ffffff?text=BA"
+                                    },
+                                    image: "https://via.placeholder.com/400x200/28a745/ffffff?text=BMW+Sales",
+                                    sentiment: { score: 18, label: "positive" },
+                                    readTime: 4,
+                                    isBreaking: false,
+                                    categories: ["Business", "Automotive"],
+                                    topics: ["Sales", "Financial Results"],
+                                    engagement: { views: 1200, shares: 45, comments: 23 }
+                                },
+                                {
+                                    id: "bmw_news_3",
+                                    title: "BMW Recalls 50,000 Vehicles Over Safety Concerns",
+                                    description: "BMW has issued a voluntary recall for approximately 50,000 vehicles due to potential brake system issues.",
+                                    url: "https://example.com/bmw-recall-safety",
+                                    publishedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+                                    source: { 
+                                        name: "Safety First News",
+                                        logo: "https://via.placeholder.com/50x50/dc3545/ffffff?text=SFN"
+                                    },
+                                    image: "https://via.placeholder.com/400x200/dc3545/ffffff?text=BMW+Recall",
+                                    sentiment: { score: -15, label: "negative" },
+                                    readTime: 5,
+                                    isBreaking: true,
+                                    categories: ["Safety", "Automotive"],
+                                    topics: ["Recall", "Safety"],
+                                    engagement: { views: 2100, shares: 89, comments: 156 }
+                                }
+                            ]
+                        },
+                        socialData: {
+                            data: [
+                                {
+                                    id: "bmw_social_1",
+                                    title: "BMW's new electric SUV is amazing!",
+                                    description: "Just test drove the new BMW iX and it's incredible. The range and performance are outstanding.",
+                                    url: "https://twitter.com/user/status/123456789",
+                                    publishedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+                                    platform: { 
+                                        name: "Twitter",
+                                        logo: "https://via.placeholder.com/50x50/1da1f2/ffffff?text=T"
+                                    },
+                                    image: "https://via.placeholder.com/400x200/1da1f2/ffffff?text=BMW+iX",
+                                    sentiment: { score: 22, label: "positive" },
+                                    engagement: { views: 850, shares: 23, comments: 12, likes: 45 }
+                                }
+                            ]
+                        },
+                        timestamp: new Date().toISOString()
+                    },
+                    {
+                        keyword: "artificial intelligence",
+                        newsData: {
+                            results: [
+                                {
+                                    id: "ai_news_1",
+                                    title: "AI Breakthrough: New Model Achieves Human-Level Reasoning",
+                                    description: "Researchers have developed an AI model that demonstrates human-level reasoning capabilities across multiple domains.",
+                                    url: "https://example.com/ai-breakthrough-reasoning",
+                                    publishedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+                                    source: { 
+                                        name: "Tech Innovation Weekly",
+                                        logo: "https://via.placeholder.com/50x50/6f42c1/ffffff?text=TIW"
+                                    },
+                                    image: "https://via.placeholder.com/400x200/6f42c1/ffffff?text=AI+Breakthrough",
+                                    sentiment: { score: 28, label: "positive" },
+                                    readTime: 8,
+                                    isBreaking: true,
+                                    categories: ["Technology", "AI"],
+                                    topics: ["Machine Learning", "Research"],
+                                    engagement: { views: 3200, shares: 145, comments: 89 }
+                                },
+                                {
+                                    id: "ai_news_2",
+                                    title: "AI Ethics: New Guidelines for Responsible Development",
+                                    description: "Leading AI companies have released comprehensive guidelines for ethical AI development and deployment.",
+                                    url: "https://example.com/ai-ethics-guidelines",
+                                    publishedAt: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString(),
+                                    source: { 
+                                        name: "AI Ethics Journal",
+                                        logo: "https://via.placeholder.com/50x50/20c997/ffffff?text=AEJ"
+                                    },
+                                    image: "https://via.placeholder.com/400x200/20c997/ffffff?text=AI+Ethics",
+                                    sentiment: { score: 12, label: "positive" },
+                                    readTime: 7,
+                                    isBreaking: false,
+                                    categories: ["Ethics", "AI"],
+                                    topics: ["Responsible AI", "Guidelines"],
+                                    engagement: { views: 1800, shares: 67, comments: 34 }
+                                }
+                            ]
+                        },
+                        socialData: {
+                            data: [
+                                {
+                                    id: "ai_social_1",
+                                    title: "The future of AI is here!",
+                                    description: "Just attended an AI conference and the innovations are mind-blowing. The potential is limitless.",
+                                    url: "https://linkedin.com/posts/user-123456789",
+                                    publishedAt: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString(),
+                                    platform: { 
+                                        name: "LinkedIn",
+                                        logo: "https://via.placeholder.com/50x50/0077b5/ffffff?text=L"
+                                    },
+                                    image: "https://via.placeholder.com/400x200/0077b5/ffffff?text=AI+Conference",
+                                    sentiment: { score: 20, label: "positive" },
+                                    engagement: { views: 1200, shares: 45, comments: 23, likes: 78 }
+                                }
+                            ]
+                        },
+                        timestamp: new Date().toISOString()
+                    }
+                ];
+                
+                // Store in localStorage for the Historical Data page to use
+                localStorage.setItem('historicalTestData', JSON.stringify(historicalTestData));
+                localStorage.setItem('monitoringData', JSON.stringify(historicalTestData));
+                localStorage.setItem('testMonitoringData', JSON.stringify(historicalTestData));
+                
+                log(`✅ Historical test data injected successfully!
+
+📊 Test Data Created:
+- Keywords: ${historicalTestData.length}
+- BMW Articles: ${historicalTestData[0].newsData.results.length}
+- BMW Social Posts: ${historicalTestData[0].socialData.data.length}
+- AI Articles: ${historicalTestData[1].newsData.results.length}
+- AI Social Posts: ${historicalTestData[1].socialData.data.length}
+
+📋 Data Stored In:
+✅ localStorage.historicalTestData
+✅ localStorage.monitoringData
+✅ localStorage.testMonitoringData
+
+🎯 The Historical Data page should now display this test data!
+Try opening the Historical Data page to see the results.`, 'success');
+                
+            } catch (error) {
+                log(`❌ Error injecting historical test data: ${error.message}`, 'error');
+            }
+        }
+        
+        async function checkServerStatus() {
+            try {
+                log('🔍 Checking server status...\n', 'info');
+                
+                const response = await fetch('/api/data/monitoring', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': 'Bearer ' + btoa(JSON.stringify({ userId: 9 }))
+                    }
+                });
+                
+                if (response.ok) {
+                    log(`✅ Server is running!
+
+📊 Server Status:
+- Status: ${response.status}
+- Response: OK
+- API Endpoints: Accessible
+
+🎯 The server is working properly.
+You can now trigger data collection and use the Historical Data page normally.`, 'success');
+                } else {
+                    log(`⚠️ Server responded with error:
+
+📊 Server Status:
+- Status: ${response.status}
+- Response: ${response.statusText}
+
+🔍 This might indicate:
+- Server is running but has issues
+- Authentication problems
+- API endpoint issues
+
+💡 Check the server console for detailed error messages.`, 'warning');
+                }
+                
+            } catch (error) {
+                log(`❌ Server is not running!
+
+🔍 Error Details:
+- Error: ${error.message}
+- Type: Network/Connection Error
+
+💡 This confirms the server startup issue.
+Solutions:
+1. Update Node.js to version 18.x.x or higher
+2. Or downgrade Next.js to version 13.5.6
+3. Then run: npm run dev
+
+🎯 Once the server is running, the Historical Data page will work properly.`, 'error');
+            }
+        }
+        
+        async function testAPIEndpoints() {
+            const endpoints = [
+                { name: 'Monitoring Data', url: '/api/data/monitoring' },
+                { name: 'Historical Data', url: '/api/historical-data' },
+                { name: 'Keywords', url: '/api/keywords' },
+                { name: 'Data Collection', url: '/api/data/collect' }
+            ];
+            
+            log('🧪 Testing API endpoints...\n', 'info');
+            
+            let report = '📊 API Endpoints Test:\n\n';
+            let allWorking = true;
+            
+            for (const endpoint of endpoints) {
+                try {
+                    const response = await fetch(endpoint.url, {
+                        method: endpoint.name === 'Data Collection' ? 'POST' : 'GET',
+                        headers: {
+                            'Authorization': 'Bearer ' + btoa(JSON.stringify({ userId: 9 })),
+                            'Content-Type': 'application/json'
+                        },
+                        body: endpoint.name === 'Data Collection' ? JSON.stringify({}) : undefined
+                    });
+                    
+                    if (response.ok || response.status === 400) { // 400 is expected for some endpoints
+                        report += `✅ ${endpoint.name}: ${response.status} ${response.statusText}\n`;
+                    } else {
+                        report += `❌ ${endpoint.name}: ${response.status} ${response.statusText}\n`;
+                        allWorking = false;
+                    }
+                } catch (error) {
+                    report += `❌ ${endpoint.name}: Connection failed\n`;
+                    allWorking = false;
+                }
+            }
+            
+            report += `\n🎯 Overall Status: ${allWorking ? 'All endpoints working' : 'Some endpoints failed'}\n`;
+            report += `💡 If endpoints fail, the server is not running properly.`;
+            
+            log(report, allWorking ? 'success' : 'error');
+        }
+        
+        function testHistoricalDataPage() {
+            const url = window.location.origin + '/dashboard/historical';
+            window.open(url, '_blank');
+            
+            log(`🚀 Historical Data Page opened: ${url}
+
+📋 Expected Results:
+1. Page should load without flickering
+2. Historical Data tab should show test data
+3. Data should be filterable by date range
+4. Data should be filterable by keyword
+5. Both news and social data should be visible
+
+🔍 What to Look For:
+- BMW articles (3 news, 1 social)
+- AI articles (2 news, 1 social)
+- Date range filters working
+- Keyword filters working
+- No "No data found" message
+
+💡 If you still see "No data found":
+1. Make sure you clicked "Inject Historical Test Data" first
+2. Check browser console for any errors
+3. The test data should override the API calls`, 'info');
+        }
+        
+        function simulateDataCollection() {
+            try {
+                // Simulate a successful data collection
+                const collectionResult = {
+                    message: "Data collected successfully",
+                    collectionJobId: Math.floor(Math.random() * 10000),
+                    data: [
+                        {
+                            keyword: "bmw",
+                            newsData: { results: [] },
+                            socialData: { data: [] },
+                            timestamp: new Date().toISOString()
+                        }
+                    ]
+                };
+                
+                // Store collection result
+                localStorage.setItem('lastCollectionResult', JSON.stringify(collectionResult));
+                
+                log(`✅ Data collection simulated successfully!
+
+📊 Collection Results:
+- Message: ${collectionResult.message}
+- Collection Job ID: ${collectionResult.collectionJobId}
+- Keywords Processed: ${collectionResult.data.length}
+
+📋 This simulates what would happen when the server is running.
+The actual data collection would save to:
+✅ users.monitoringData (dashboard)
+✅ historical_news_data table
+✅ historical_social_data table
+✅ data_collection_jobs table
+
+🎯 Once the server is fixed, real data collection will work this way.`, 'success');
+                
+            } catch (error) {
+                log(`❌ Error simulating data collection: ${error.message}`, 'error');
+            }
+        }
+        
+        // Auto-create test user and inject data on page load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                createTestUser();
+                setTimeout(() => {
+                    injectHistoricalTestData();
+                }, 500);
+            }, 500);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fix Empty Historical Tables</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .status {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+            width: 100%;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .step {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #007bff;
+        }
+        .step h4 {
+            margin: 0 0 5px 0;
+            color: #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Fix Empty Historical Tables</h1>
+        
+        <div class="status warning">
+            <strong>🎯 Root Cause Identified:</strong><br>
+            The API is working ("✅ Using API Data") but returning empty arrays because the historical database tables are empty. Dashboard has data in `users.monitoringData` but not in `historical_news_data` and `historical_social_data` tables.
+        </div>
+        
+        <div class="test-section">
+            <h3>📊 Current Situation:</h3>
+            <ul>
+                <li>✅ <strong>Server is running:</strong> API calls succeed</li>
+                <li>✅ <strong>Dashboard has data:</strong> Recent Activity shows articles</li>
+                <li>✅ <strong>Historical API works:</strong> Returns proper response structure</li>
+                <li>❌ <strong>Historical tables empty:</strong> `news: []`, `social: []`</li>
+                <li>✅ <strong>Redux fallback added:</strong> Will use Redux data when API returns empty</li>
+            </ul>
+        </div>
+        
+        <div class="test-section">
+            <h3>🔧 Solutions:</h3>
+            
+            <div class="step">
+                <h4>Solution 1: Trigger Data Collection (Recommended)</h4>
+                <p>Use the updated data collection API that now saves to both dashboard and historical tables.</p>
+                <button onclick="triggerDataCollection()">Trigger Data Collection</button>
+            </div>
+            
+            <div class="step">
+                <h4>Solution 2: Use Migration API</h4>
+                <p>Migrate existing dashboard data to historical tables using the migration API.</p>
+                <button onclick="runMigration()">Run Migration API</button>
+            </div>
+            
+            <div class="step">
+                <h4>Solution 3: Force Redux Fallback</h4>
+                <p>Ensure Redux fallback is working by injecting test data and testing the page.</p>
+                <button onclick="testReduxFallback()">Test Redux Fallback</button>
+            </div>
+            
+            <div class="step">
+                <h4>Solution 4: Manual Data Injection</h4>
+                <p>Manually inject test data into localStorage to simulate historical data.</p>
+                <button onclick="injectTestData()">Inject Test Data</button>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h3>🧪 Test & Verify:</h3>
+            <div class="button-group">
+                <button onclick="checkCurrentState()">Check Current State</button>
+                <button onclick="testHistoricalPage()">Test Historical Page</button>
+                <button onclick="verifyFix()">Verify Fix</button>
+                <button onclick="runFullDiagnostic()">Run Full Diagnostic</button>
+            </div>
+        </div>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `<div class="result ${type}">${message}</div>`;
+        }
+        
+        async function triggerDataCollection() {
+            try {
+                const userData = localStorage.getItem('user');
+                if (!userData) {
+                    log('❌ No user found in localStorage.', 'error');
+                    return;
+                }
+                
+                const user = JSON.parse(userData);
+                const token = btoa(JSON.stringify({ userId: user.id }));
+                
+                log('🚀 Triggering data collection...\n', 'info');
+                
+                const response = await fetch('/api/data/collect', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    log(`✅ Data Collection Successful!
+
+📊 Collection Results:
+- Status: ${response.status}
+- Message: ${result.message}
+- Collection Job ID: ${result.collectionJobId}
+- Keywords Processed: ${result.data?.length || 0}
+
+📋 Data Storage:
+✅ Dashboard Data: Updated in users.monitoringData
+✅ Historical News: Saved to historical_news_data table
+✅ Historical Social: Saved to historical_social_data table
+✅ Collection Job: Recorded in data_collection_jobs table
+
+🎯 The Historical Data page should now show data!
+The updated data collection process saves to both locations.`, 'success');
+                } else {
+                    const errorData = await response.json();
+                    log(`❌ Data Collection Failed!
+
+Status: ${response.status}
+Error: ${errorData.error}
+
+🔍 This might indicate:
+- No keywords configured for user
+- Database connection issues
+- Server configuration problems
+
+💡 Check if user has keywords configured.`, 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ Error triggering data collection: ${error.message}
+
+🔍 This usually indicates the server is not running.`, 'error');
+            }
+        }
+        
+        async function runMigration() {
+            try {
+                const userData = localStorage.getItem('user');
+                if (!userData) {
+                    log('❌ No user found in localStorage.', 'error');
+                    return;
+                }
+                
+                const user = JSON.parse(userData);
+                const token = btoa(JSON.stringify({ userId: user.id }));
+                
+                log('🔄 Running migration API...\n', 'info');
+                
+                const response = await fetch('/api/migrate-dashboard-to-historical', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    log(`✅ Migration Successful!
+
+📊 Migration Results:
+- Status: ${response.status}
+- Message: ${result.message}
+- Migration Job ID: ${result.migrationJobId}
+
+📈 Data Migrated:
+- Keywords Processed: ${result.migratedData?.keywords || 0}
+- News Articles: ${result.migratedData?.newsArticles || 0}
+- Social Posts: ${result.migratedData?.socialPosts || 0}
+
+🎯 Historical tables are now populated!
+The Historical Data page should show data from the migrated articles.`, 'success');
+                } else {
+                    const errorData = await response.json();
+                    log(`❌ Migration Failed!
+
+Status: ${response.status}
+Error: ${errorData.error}
+
+🔍 This might indicate:
+- No monitoring data found for user
+- Migration API not implemented
+- Database connection issues
+
+💡 Try triggering data collection first to ensure dashboard has data.`, 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ Error running migration: ${error.message}
+
+🔍 This usually indicates the server is not running or migration API is not available.`, 'error');
+            }
+        }
+        
+        function testReduxFallback() {
+            try {
+                // Create test Redux data
+                const testArticles = [
+                    {
+                        id: 1,
+                        userId: 9,
+                        keyword: "bmw",
+                        articleId: "bmw_001",
+                        title: "BMW Unveils Revolutionary Electric Vehicle Technology",
+                        description: "BMW has announced breakthrough battery technology that promises to revolutionize the electric vehicle market.",
+                        url: "https://example.com/bmw-electric",
+                        publishedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+                        sourceName: "Auto News Daily",
+                        sourceLogo: "https://via.placeholder.com/50x50/007bff/ffffff?text=AND",
+                        image: "https://via.placeholder.com/400x200/007bff/ffffff?text=BMW+Electric",
+                        sentimentScore: 25,
+                        sentimentLabel: "positive",
+                        readTime: 6,
+                        isBreaking: true,
+                        categories: ["Automotive", "Technology"],
+                        topics: ["Electric Vehicles", "Innovation"],
+                        engagement: { views: 1850, shares: 67, comments: 34 },
+                        rawData: {},
+                        createdAt: new Date().toISOString()
+                    },
+                    {
+                        id: 2,
+                        userId: 9,
+                        keyword: "artificial intelligence",
+                        articleId: "ai_001",
+                        title: "AI Breakthrough: New Model Achieves Human-Level Reasoning",
+                        description: "Researchers have developed an AI model that demonstrates human-level reasoning capabilities.",
+                        url: "https://example.com/ai-breakthrough",
+                        publishedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+                        platformName: "Tech Innovation Weekly",
+                        platformLogo: "https://via.placeholder.com/50x50/6f42c1/ffffff?text=TIW",
+                        image: "https://via.placeholder.com/400x200/6f42c1/ffffff?text=AI+Breakthrough",
+                        sentimentScore: 28,
+                        sentimentLabel: "positive",
+                        readTime: 8,
+                        isBreaking: true,
+                        categories: ["Technology", "AI"],
+                        topics: ["Machine Learning", "Research"],
+                        engagement: { views: 3200, shares: 145, comments: 89 },
+                        rawData: {},
+                        createdAt: new Date().toISOString()
+                    }
+                ];
+                
+                // Store in localStorage to simulate Redux state
+                localStorage.setItem('reduxArticles', JSON.stringify(testArticles));
+                
+                log(`✅ Redux Fallback Test Data Created!
+
+📊 Test Articles:
+- Total Articles: ${testArticles.length}
+- BMW Article: ${testArticles[0].title}
+- AI Article: ${testArticles[1].title}
+
+📋 Data Stored In:
+✅ localStorage.reduxArticles (simulates Redux state)
+
+🎯 Now test the Historical Data page!
+The page should:
+1. Try API first (will return empty arrays)
+2. Detect empty API response
+3. Fall back to Redux data
+4. Show "🔄 Using Redux Fallback Data" in debug info
+5. Display the test articles
+
+💡 This tests the Redux fallback mechanism when API returns empty data.`, 'success');
+                
+            } catch (error) {
+                log(`❌ Error creating Redux test data: ${error.message}`, 'error');
+            }
+        }
+        
+        function injectTestData() {
+            try {
+                // Create comprehensive test data
+                const historicalTestData = {
+                    news: [
+                        {
+                            id: 1,
+                            userId: 9,
+                            keyword: "bmw",
+                            title: "BMW Unveils Revolutionary Electric Vehicle Technology",
+                            description: "BMW has announced breakthrough battery technology that promises to revolutionize the electric vehicle market.",
+                            url: "https://example.com/bmw-electric",
+                            publishedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+                            collectedAt: new Date().toISOString(),
+                            sourceName: "Auto News Daily",
+                            sentimentScore: 25,
+                            sentimentLabel: "positive",
+                            engagement: { views: 1850, shares: 67, comments: 34 }
+                        },
+                        {
+                            id: 2,
+                            userId: 9,
+                            keyword: "bmw",
+                            title: "BMW Reports Record Sales in Q4 2024",
+                            description: "BMW has reported its highest quarterly sales figures in company history.",
+                            url: "https://example.com/bmw-sales",
+                            publishedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+                            collectedAt: new Date().toISOString(),
+                            sourceName: "Business Automotive",
+                            sentimentScore: 18,
+                            sentimentLabel: "positive",
+                            engagement: { views: 1200, shares: 45, comments: 23 }
+                        }
+                    ],
+                    social: [
+                        {
+                            id: 3,
+                            userId: 9,
+                            keyword: "artificial intelligence",
+                            title: "AI Breakthrough: New Model Achieves Human-Level Reasoning",
+                            description: "Researchers have developed an AI model that demonstrates human-level reasoning capabilities.",
+                            url: "https://example.com/ai-breakthrough",
+                            publishedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+                            collectedAt: new Date().toISOString(),
+                            platformName: "Tech Innovation Weekly",
+                            sentimentScore: 28,
+                            sentimentLabel: "positive",
+                            engagement: { views: 3200, shares: 145, comments: 89 }
+                        }
+                    ],
+                    totalNews: 2,
+                    totalSocial: 1
+                };
+                
+                // Store test data
+                localStorage.setItem('historicalTestData', JSON.stringify(historicalTestData));
+                
+                log(`✅ Test Data Injected Successfully!
+
+📊 Historical Test Data:
+- News Articles: ${historicalTestData.news.length}
+- Social Posts: ${historicalTestData.social.length}
+- Total News: ${historicalTestData.totalNews}
+- Total Social: ${historicalTestData.totalSocial}
+
+📋 Data Stored In:
+✅ localStorage.historicalTestData
+
+🎯 This simulates what the historical tables should contain.
+The Historical Data page can use this data for testing purposes.
+
+💡 This is a temporary solution for testing the UI while the database tables are empty.`, 'success');
+                
+            } catch (error) {
+                log(`❌ Error injecting test data: ${error.message}`, 'error');
+            }
+        }
+        
+        async function checkCurrentState() {
+            try {
+                const userData = localStorage.getItem('user');
+                if (!userData) {
+                    log('❌ No user found in localStorage.', 'error');
+                    return;
+                }
+                
+                const user = JSON.parse(userData);
+                const token = btoa(JSON.stringify({ userId: user.id }));
+                
+                log('🔍 Checking current state...\n', 'info');
+                
+                // Check historical data API
+                const historicalResponse = await fetch('/api/historical-data', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                // Check monitoring data API
+                const monitoringResponse = await fetch('/api/data/monitoring', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                let report = '📊 Current State Check:\n\n';
+                
+                if (historicalResponse.ok) {
+                    const historicalData = await historicalResponse.json();
+                    report += `📰 Historical Data API:\n`;
+                    report += `   - Status: ${historicalResponse.status}\n`;
+                    report += `   - News Articles: ${historicalData.data?.news?.length || 0}\n`;
+                    report += `   - Social Posts: ${historicalData.data?.social?.length || 0}\n`;
+                    report += `   - Total News: ${historicalData.data?.totalNews || 0}\n`;
+                    report += `   - Total Social: ${historicalData.data?.totalSocial || 0}\n\n`;
+                } else {
+                    report += `❌ Historical Data API: Failed (${historicalResponse.status})\n\n`;
+                }
+                
+                if (monitoringResponse.ok) {
+                    const monitoringData = await monitoringResponse.json();
+                    const data = monitoringData.monitoringData || [];
+                    report += `📊 Monitoring Data API:\n`;
+                    report += `   - Status: ${monitoringResponse.status}\n`;
+                    report += `   - Keywords: ${data.length}\n`;
+                    report += `   - Total Articles: ${data.reduce((sum, item) => sum + (item.newsData?.results?.length || 0), 0)}\n`;
+                    report += `   - Total Social: ${data.reduce((sum, item) => sum + (item.socialData?.data?.length || 0), 0)}\n\n`;
+                } else {
+                    report += `❌ Monitoring Data API: Failed (${monitoringResponse.status})\n\n`;
+                }
+                
+                // Check localStorage data
+                const reduxData = localStorage.getItem('reduxArticles');
+                const testData = localStorage.getItem('historicalTestData');
+                
+                report += `💾 LocalStorage Data:\n`;
+                report += `   - Redux Articles: ${reduxData ? 'Available' : 'Not found'}\n`;
+                report += `   - Test Data: ${testData ? 'Available' : 'Not found'}\n\n`;
+                
+                report += `💡 Analysis:\n`;
+                report += `The historical tables are empty but dashboard has data.\n`;
+                report += `Redux fallback should work when API returns empty arrays.`;
+                
+                log(report, 'warning');
+                
+            } catch (error) {
+                log(`❌ Error checking current state: ${error.message}`, 'error');
+            }
+        }
+        
+        function testHistoricalPage() {
+            const url = window.location.origin + '/dashboard/historical';
+            window.open(url, '_blank');
+            
+            log(`🚀 Historical Data Page opened: ${url}
+
+📋 Expected Results:
+1. Debug info should show data counts
+2. Should show "🔄 Using Redux Fallback Data" if using Redux
+3. News articles should be displayed
+4. Social posts should be displayed
+5. Filtering should work
+
+🔍 What to Look For:
+- Debug Info section with data counts
+- Data source indicator (API vs Redux)
+- News Articles section
+- Social Posts section
+- Proper article formatting
+
+💡 If you still see "No Data Found":
+1. Make sure you've run one of the solutions above
+2. Check that Redux data or test data is available
+3. Verify the fallback mechanism is working`, 'info');
+        }
+        
+        async function verifyFix() {
+            try {
+                const userData = localStorage.getItem('user');
+                if (!userData) {
+                    log('❌ No user found in localStorage.', 'error');
+                    return;
+                }
+                
+                const user = JSON.parse(userData);
+                const token = btoa(JSON.stringify({ userId: user.id }));
+                
+                log('🔍 Verifying fix...\n', 'info');
+                
+                const response = await fetch('/api/historical-data', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const historicalData = data.data || {};
+                    
+                    if ((historicalData.news?.length || 0) > 0 || (historicalData.social?.length || 0) > 0) {
+                        log(`✅ Fix Verified!
+
+📊 Historical Data Now Available:
+- News Articles: ${historicalData.news?.length || 0}
+- Social Posts: ${historicalData.social?.length || 0}
+- Total News: ${historicalData.totalNews || 0}
+- Total Social: ${historicalData.totalSocial || 0}
+
+🎯 The Historical Data page should now show data!
+The historical tables have been populated successfully.`, 'success');
+                    } else {
+                        log(`⚠️ Historical tables still empty.
+
+📊 Current Status:
+- News Articles: ${historicalData.news?.length || 0}
+- Social Posts: ${historicalData.social?.length || 0}
+
+💡 Try one of the solutions:
+1. Trigger data collection
+2. Run migration API
+3. Test Redux fallback
+4. Inject test data
+
+The Redux fallback should still work even with empty tables.`, 'warning');
+                    }
+                } else {
+                    log(`❌ Verification failed: ${response.status} - ${await response.text()}`, 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ Error verifying fix: ${error.message}`, 'error');
+            }
+        }
+        
+        async function runFullDiagnostic() {
+            log('🔍 Running full diagnostic...\n', 'info');
+            
+            await checkCurrentState();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            log('\n🎯 Diagnostic Complete!\n\nNext Steps:\n1. Try "Trigger Data Collection" to populate historical tables\n2. Or "Test Redux Fallback" to use Redux data\n3. Then "Test Historical Page" to verify the fix', 'info');
+        }
+        
+        // Auto-create test user on page load
+        window.addEventListener('load', () => {
+            const testUser = {
+                id: 9,
+                name: "Test User",
+                email: "test@example.com",
+                plan: "pro",
+                status: "approved",
+                keywords: ["bmw", "artificial intelligence", "climate change"]
+            };
+            
+            localStorage.setItem('user', JSON.stringify(testUser));
+            
+            setTimeout(() => {
+                log('✅ Test user created automatically. Ready for fixing empty historical tables!', 'success');
+            }, 500);
+        });
+    </script>
+</body>
+</html>

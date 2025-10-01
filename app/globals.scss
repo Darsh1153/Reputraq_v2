@@ -1,0 +1,93 @@
+@import '../lib/styles/globals.css';
+
+/* Reputraq Brand Guidelines */
+:root {
+  /* Brand Colors */
+  --brand-vibrant-sky: #0093DD;
+  --brand-ocean-depth: #004163;
+  --brand-charcoal-core: #101010;
+  --brand-pure-white: #FFFFFF;
+  
+  /* Brand Gradients */
+  --brand-gradient: linear-gradient(135deg, #0093DD 0%, #004163 100%);
+  --brand-gradient-vertical: linear-gradient(180deg, #0093DD 0%, #004163 100%);
+  
+  /* Typography */
+  --font-primary: 'Helvetica', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-secondary: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  
+  /* Text Colors */
+  --text-primary: #101010;
+  --text-secondary: #004163;
+  --text-muted: #6b7280;
+  
+  /* UI Colors */
+  --ui-background: #f8fafc;
+  --ui-surface: #ffffff;
+  --ui-border: #e5e7eb;
+  --ui-border-light: #f1f5f9;
+  
+  /* Shadows */
+  --shadow-minimal: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow-subtle: 0 4px 6px rgba(0, 0, 0, 0.07);
+  --shadow-elevated: 0 10px 25px rgba(0, 0, 0, 0.1);
+  
+  /* Border Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  
+  /* Spacing */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+}
+
+/* Global Typography */
+body {
+  font-family: var(--font-secondary);
+  color: var(--text-primary);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-primary);
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.2;
+  margin: 0;
+}
+
+h1 { font-size: 2.5rem; }
+h2 { font-size: 2rem; }
+h3 { font-size: 1.5rem; }
+h4 { font-size: 1.25rem; }
+h5 { font-size: 1.125rem; }
+h6 { font-size: 1rem; }
+
+/* Legacy styles for backward compatibility */
+.filterSelect {
+  color: var(--text-primary);
+}
+
+.DataVisualization_filterSelect {
+  color: var(--text-primary);
+}
+
+/* Override dark mode for consistent branding */
+@media (prefers-color-scheme: dark) {
+  :global(html) {
+    color-scheme: light;
+  }
+}
+
+strong {
+  color: var(--text-primary);
+  font-weight: 600;
+}

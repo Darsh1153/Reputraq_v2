@@ -1,0 +1,63 @@
+.fixedRefreshButton {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--gradient-brand);
+  color: var(--color-white);
+  border: none;
+  box-shadow: 0 4px 12px rgba(0, 147, 221, 0.3);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition-base);
+  z-index: 1000;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 147, 221, 0.4);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .icon {
+    width: 24px;
+    height: 24px;
+    transition: transform var(--transition-base);
+  }
+
+  .spinning {
+    animation: spin 1s linear infinite;
+  }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .fixedRefreshButton {
+    bottom: 1rem;
+    right: 1rem;
+    width: 48px;
+    height: 48px;
+
+    .icon {
+      width: 20px;
+      height: 20px;
+    }
+  }
+}

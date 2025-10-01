@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inject Test Data</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+            width: 100%;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Inject Test Data</h1>
+        
+        <p><strong>Purpose:</strong> This tool injects test data into your browser's localStorage so you can see the UI working while we fix the Node.js server issue.</p>
+        
+        <div class="result info">
+<strong>⚠️ Important:</strong> This is temporary test data. Once your server is running properly, you'll need to collect real data using the cron job system.
+        </div>
+        
+        <button onclick="injectTestData()">🚀 Inject Test Data</button>
+        <button onclick="clearTestData()">🗑️ Clear Test Data</button>
+        <button onclick="goToDashboard()">📈 Go to Dashboard</button>
+        
+        <div id="result"></div>
+        
+        <div class="result info">
+<strong>📋 What this does:</strong>
+1. Creates realistic test news articles
+2. Stores them in localStorage
+3. Simulates the data structure your app expects
+4. Allows you to see the UI working immediately
+
+<strong>🔄 Next Steps:</strong>
+1. Click "Inject Test Data"
+2. Click "Go to Dashboard" 
+3. Refresh the dashboard page
+4. You should see test articles displayed
+5. Fix Node.js version to get real data collection working
+        </div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `<div class="result ${type}">${message}</div>`;
+        }
+        
+        function injectTestData() {
+            try {
+                // Create realistic test data
+                const testData = [
+                    {
+                        keyword: "artificial intelligence",
+                        newsData: {
+                            results: [
+                                {
+                                    id: "1",
+                                    title: "AI Breakthrough: New Model Achieves Human-Level Performance",
+                                    description: "Researchers have developed a new artificial intelligence model that demonstrates human-level performance across multiple tasks, marking a significant milestone in AI development.",
+                                    url: "https://example.com/ai-breakthrough",
+                                    publishedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
+                                    source: { 
+                                        name: "Tech News Daily",
+                                        logo: "https://via.placeholder.com/50x50/007bff/ffffff?text=TND"
+                                    },
+                                    image: "https://via.placeholder.com/400x200/007bff/ffffff?text=AI+News",
+                                    sentiment: { score: 15, label: "positive" },
+                                    readTime: 5,
+                                    isBreaking: true,
+                                    categories: ["Technology", "AI"],
+                                    topics: ["Machine Learning", "Research"],
+                                    engagement: { views: 1250, shares: 45, comments: 23 }
+                                },
+                                {
+                                    id: "2",
+                                    title: "Machine Learning Revolutionizes Healthcare Diagnostics",
+                                    description: "New machine learning algorithms are transforming how doctors diagnose diseases, with accuracy rates exceeding 95% in recent trials.",
+                                    url: "https://example.com/ml-healthcare",
+                                    publishedAt: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(), // 4 hours ago
+                                    source: { 
+                                        name: "Health Tech Weekly",
+                                        logo: "https://via.placeholder.com/50x50/28a745/ffffff?text=HTW"
+                                    },
+                                    image: "https://via.placeholder.com/400x200/28a745/ffffff?text=Healthcare+AI",
+                                    sentiment: { score: 8, label: "positive" },
+                                    readTime: 7,
+                                    isBreaking: false,
+                                    categories: ["Healthcare", "Technology"],
+                                    topics: ["Machine Learning", "Diagnostics"],
+                                    engagement: { views: 890, shares: 32, comments: 18 }
+                                },
+                                {
+                                    id: "3",
+                                    title: "Ethical Concerns Raised Over AI Decision Making",
+                                    description: "Experts warn about the potential risks of AI systems making autonomous decisions without proper oversight and ethical guidelines.",
+                                    url: "https://example.com/ai-ethics",
+                                    publishedAt: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(), // 6 hours ago
+                                    source: { 
+                                        name: "Ethics Today",
+                                        logo: "https://via.placeholder.com/50x50/dc3545/ffffff?text=ET"
+                                    },
+                                    image: "https://via.placeholder.com/400x200/dc3545/ffffff?text=AI+Ethics",
+                                    sentiment: { score: -5, label: "negative" },
+                                    readTime: 6,
+                                    isBreaking: false,
+                                    categories: ["Ethics", "Technology"],
+                                    topics: ["AI Safety", "Governance"],
+                                    engagement: { views: 567, shares: 28, comments: 41 }
+                                }
+                            ]
+                        },
+                        socialData: {
+                            data: [
+                                {
+                                    id: "social1",
+                                    title: "Exciting developments in AI!",
+                                    description: "Just read about the latest AI breakthrough. The future is here!",
+                                    url: "https://twitter.com/example/status/123",
+                                    publishedAt: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(),
+                                    platform: "Twitter",
+                                    platformLogo: "https://via.placeholder.com/30x30/1da1f2/ffffff?text=T",
+                                    engagement: { views: 234, shares: 12, comments: 8 }
+                                }
+                            ]
+                        },
+                        timestamp: new Date().toISOString()
+                    },
+                    {
+                        keyword: "climate change",
+                        newsData: {
+                            results: [
+                                {
+                                    id: "4",
+                                    title: "Global Climate Summit Reaches Historic Agreement",
+                                    description: "World leaders have reached a groundbreaking agreement to reduce carbon emissions by 50% by 2030, marking a turning point in climate action.",
+                                    url: "https://example.com/climate-summit",
+                                    publishedAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(),
+                                    source: { 
+                                        name: "Environmental News",
+                                        logo: "https://via.placeholder.com/50x50/28a745/ffffff?text=EN"
+                                    },
+                                    image: "https://via.placeholder.com/400x200/28a745/ffffff?text=Climate+Summit",
+                                    sentiment: { score: 12, label: "positive" },
+                                    readTime: 8,
+                                    isBreaking: true,
+                                    categories: ["Environment", "Politics"],
+                                    topics: ["Climate Change", "Sustainability"],
+                                    engagement: { views: 2100, shares: 156, comments: 89 }
+                                }
+                            ]
+                        },
+                        socialData: { data: [] },
+                        timestamp: new Date().toISOString()
+                    }
+                ];
+                
+                // Store in localStorage
+                localStorage.setItem('testMonitoringData', JSON.stringify(testData));
+                
+                // Also store in the format your app might expect
+                localStorage.setItem('monitoringData', JSON.stringify(testData));
+                
+                log(`✅ Test data injected successfully!
+
+📊 Data Summary:
+- Keywords: ${testData.length}
+- Total News Articles: ${testData.reduce((sum, item) => sum + (item.newsData?.results?.length || 0), 0)}
+- Total Social Posts: ${testData.reduce((sum, item) => sum + (item.socialData?.data?.length || 0), 0)}
+
+🎯 Next Steps:
+1. Click "Go to Dashboard"
+2. Refresh the dashboard page
+3. You should see test articles displayed
+4. Fix Node.js version to get real data collection working`, 'success');
+                
+            } catch (error) {
+                log(`❌ Error injecting test data: ${error.message}`, 'error');
+            }
+        }
+        
+        function clearTestData() {
+            try {
+                localStorage.removeItem('testMonitoringData');
+                localStorage.removeItem('monitoringData');
+                log('✅ Test data cleared successfully!', 'success');
+            } catch (error) {
+                log(`❌ Error clearing test data: ${error.message}`, 'error');
+            }
+        }
+        
+        function goToDashboard() {
+            // Try to open dashboard
+            const dashboardUrl = window.location.origin + '/dashboard';
+            window.open(dashboardUrl, '_blank');
+            
+            log(`🚀 Opening dashboard: ${dashboardUrl}
+
+📋 Instructions:
+1. The dashboard should open in a new tab
+2. If you see "No News Data Available", refresh the page
+3. You should now see test articles displayed
+4. This proves your UI is working correctly
+
+🔧 To get real data:
+1. Fix Node.js version (see fix-node-version.md)
+2. Start server with: npm run dev
+3. Use trigger-data-now.html to collect real data`, 'info');
+        }
+        
+        // Check if test data already exists
+        window.addEventListener('load', () => {
+            const existingData = localStorage.getItem('testMonitoringData');
+            if (existingData) {
+                log('ℹ️ Test data already exists in localStorage. You can clear it or inject new data.', 'info');
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minimal Competitor Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .result { margin: 10px 0; padding: 10px; border-radius: 4px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Minimal Competitor Keywords Test</h1>
+    
+    <button onclick="testFetch()">Test Fetch Competitor Keywords</button>
+    <button onclick="testAdd()">Test Add Competitor Keyword</button>
+    <div id="result" class="result"></div>
+
+    <script>
+        // Mock user for testing
+        const mockUser = { id: 1, name: "Test User", plan: "pro" };
+        const token = btoa(JSON.stringify({ userId: mockUser.id }));
+        
+        async function testFetch() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.textContent = 'Testing fetch...';
+            
+            try {
+                const response = await fetch('/api/competitor-keywords', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `✅ Fetch successful! Found ${data.length} keywords: ${JSON.stringify(data)}`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `❌ Fetch failed (${response.status}): ${JSON.stringify(data)}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Error: ${error.message}`;
+            }
+        }
+        
+        async function testAdd() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.textContent = 'Testing add...';
+            
+            try {
+                const response = await fetch('/api/competitor-keywords', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ keyword: 'Test Competitor ' + Date.now() })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `✅ Add successful! ${JSON.stringify(data)}`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `❌ Add failed (${response.status}): ${JSON.stringify(data)}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Error: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>

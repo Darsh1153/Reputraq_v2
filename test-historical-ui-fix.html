@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Historical UI Fix</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .status {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+            width: 100%;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        .info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Test Historical UI Fix</h1>
+        
+        <div class="status success">
+            <strong>✅ UI Data Display Fix Applied:</strong><br>
+            Fixed the data handling in HistoricalDataDisplay component to properly display fetched data.
+        </div>
+        
+        <div class="test-section">
+            <h3>🎯 The Problem:</h3>
+            <p>The Historical Data page was fetching data successfully but not displaying it due to incorrect data structure handling in the UI component.</p>
+        </div>
+        
+        <div class="test-section">
+            <h3>✅ The Fix Applied:</h3>
+            <ul>
+                <li><strong>Fixed Data Structure:</strong> Component now properly handles API response structure</li>
+                <li><strong>Added Debug Info:</strong> Shows data counts and filter states</li>
+                <li><strong>Improved Error Handling:</strong> Better null/undefined checks</li>
+                <li><strong>Enhanced Empty State:</strong> Shows debug info when no data found</li>
+            </ul>
+        </div>
+        
+        <div class="test-section">
+            <h3>🧪 Test the Fix:</h3>
+            <p>Test the Historical Data page with both server data and fallback test data.</p>
+            <div class="button-group">
+                <button onclick="createTestUser()">Create Test User</button>
+                <button onclick="injectTestData()">Inject Test Data</button>
+                <button onclick="testHistoricalDataPage()">Test Historical Data Page</button>
+                <button onclick="checkDataStructure()">Check Data Structure</button>
+            </div>
+        </div>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `<div class="result ${type}">${message}</div>`;
+        }
+        
+        function createTestUser() {
+            try {
+                const testUser = {
+                    id: 9,
+                    name: "Test User",
+                    email: "test@example.com",
+                    plan: "pro",
+                    status: "approved",
+                    keywords: ["bmw", "artificial intelligence", "climate change"]
+                };
+                
+                localStorage.setItem('user', JSON.stringify(testUser));
+                
+                log(`✅ Test user created successfully!
+
+👤 User Details:
+- ID: ${testUser.id}
+- Name: ${testUser.name}
+- Email: ${testUser.email}
+- Plan: ${testUser.plan}
+- Status: ${testUser.status}
+- Keywords: ${testUser.keywords.join(', ')}
+
+🎯 Ready for historical data testing.`, 'success');
+                
+            } catch (error) {
+                log(`❌ Error creating test user: ${error.message}`, 'error');
+            }
+        }
+        
+        function injectTestData() {
+            try {
+                // Create test data that matches the API response structure
+                const testHistoricalData = {
+                    news: [
+                        {
+                            id: 1,
+                            keyword: "bmw",
+                            title: "BMW Unveils Revolutionary Electric Vehicle Technology",
+                            description: "BMW has announced breakthrough battery technology that promises to revolutionize the electric vehicle market.",
+                            url: "https://example.com/bmw-electric",
+                            publishedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+                            collectedAt: new Date().toISOString(),
+                            sentimentScore: 25,
+                            sentimentLabel: "positive",
+                            sourceName: "Auto News Daily",
+                            sourceLogo: "https://via.placeholder.com/50x50/007bff/ffffff?text=AND",
+                            image: "https://via.placeholder.com/400x200/007bff/ffffff?text=BMW+Electric",
+                            readTime: 6,
+                            isBreaking: true,
+                            categories: ["Automotive", "Technology"],
+                            topics: ["Electric Vehicles", "Innovation"],
+                            engagement: { views: 1850, shares: 67, comments: 34 },
+                            rawData: {}
+                        },
+                        {
+                            id: 2,
+                            keyword: "bmw",
+                            title: "BMW Reports Record Sales in Q4 2024",
+                            description: "BMW has reported its highest quarterly sales figures in company history.",
+                            url: "https://example.com/bmw-sales",
+                            publishedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+                            collectedAt: new Date().toISOString(),
+                            sentimentScore: 18,
+                            sentimentLabel: "positive",
+                            sourceName: "Business Automotive",
+                            sourceLogo: "https://via.placeholder.com/50x50/28a745/ffffff?text=BA",
+                            image: "https://via.placeholder.com/400x200/28a745/ffffff?text=BMW+Sales",
+                            readTime: 4,
+                            isBreaking: false,
+                            categories: ["Business", "Automotive"],
+                            topics: ["Sales", "Financial Results"],
+                            engagement: { views: 1200, shares: 45, comments: 23 },
+                            rawData: {}
+                        }
+                    ],
+                    social: [
+                        {
+                            id: 1,
+                            keyword: "bmw",
+                            title: "BMW's new electric SUV is amazing!",
+                            description: "Just test drove the new BMW iX and it's incredible. The range and performance are outstanding.",
+                            url: "https://twitter.com/user/status/123456789",
+                            publishedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+                            collectedAt: new Date().toISOString(),
+                            sentimentScore: 22,
+                            sentimentLabel: "positive",
+                            platformName: "Twitter",
+                            platformLogo: "https://via.placeholder.com/50x50/1da1f2/ffffff?text=T",
+                            image: "https://via.placeholder.com/400x200/1da1f2/ffffff?text=BMW+iX",
+                            engagement: { views: 850, shares: 23, comments: 12, likes: 45 },
+                            rawData: {}
+                        }
+                    ],
+                    totalNews: 2,
+                    totalSocial: 1,
+                    dateRange: { startDate: "2025-08-01", endDate: "2025-09-30" },
+                    filters: { keyword: "", dataType: "all" }
+                };
+                
+                // Store test data in localStorage
+                localStorage.setItem('testHistoricalData', JSON.stringify(testHistoricalData));
+                
+                log(`✅ Test historical data injected successfully!
+
+📊 Test Data Created:
+- News Articles: ${testHistoricalData.news.length}
+- Social Posts: ${testHistoricalData.social.length}
+- Total News: ${testHistoricalData.totalNews}
+- Total Social: ${testHistoricalData.totalSocial}
+
+📋 Data Structure:
+✅ Matches API response format
+✅ Includes all required fields
+✅ Proper date formatting
+✅ Sentiment scores and labels
+
+🎯 The Historical Data page should now display this test data!
+The debug info will show the data counts and help identify any remaining issues.`, 'success');
+                
+            } catch (error) {
+                log(`❌ Error injecting test data: ${error.message}`, 'error');
+            }
+        }
+        
+        function testHistoricalDataPage() {
+            const url = window.location.origin + '/dashboard/historical';
+            window.open(url, '_blank');
+            
+            log(`🚀 Historical Data Page opened: ${url}
+
+📋 Expected Results:
+1. Page should load without flickering
+2. Debug info should show data counts
+3. News articles should be displayed
+4. Social posts should be displayed
+5. Data should be filterable
+
+🔍 What to Look For:
+- Debug Info section showing data counts
+- News Articles section with 2 articles
+- Social Posts section with 1 post
+- No "No Data Found" message
+- Filter options working
+
+💡 If you still see "No Data Found":
+1. Check the debug info section
+2. Look at browser console for any errors
+3. Verify the data structure matches expectations`, 'info');
+        }
+        
+        function checkDataStructure() {
+            try {
+                const testData = localStorage.getItem('testHistoricalData');
+                
+                if (testData) {
+                    const data = JSON.parse(testData);
+                    
+                    log(`✅ Data Structure Check:
+
+📊 Test Data Structure:
+- News Array: ${Array.isArray(data.news) ? '✅ Valid' : '❌ Invalid'} (${data.news?.length || 0} items)
+- Social Array: ${Array.isArray(data.social) ? '✅ Valid' : '❌ Invalid'} (${data.social?.length || 0} items)
+- Total News: ${data.totalNews || 0}
+- Total Social: ${data.totalSocial || 0}
+
+📋 Sample News Item:
+${data.news?.[0] ? `
+- ID: ${data.news[0].id}
+- Title: ${data.news[0].title}
+- Keyword: ${data.news[0].keyword}
+- Source: ${data.news[0].sourceName}
+- Sentiment: ${data.news[0].sentimentLabel} (${data.news[0].sentimentScore})
+` : 'No news items'}
+
+📋 Sample Social Item:
+${data.social?.[0] ? `
+- ID: ${data.social[0].id}
+- Title: ${data.social[0].title}
+- Keyword: ${data.social[0].keyword}
+- Platform: ${data.social[0].platformName}
+- Sentiment: ${data.social[0].sentimentLabel} (${data.social[0].sentimentScore})
+` : 'No social items'}
+
+🎯 Data structure looks correct for the Historical Data page!`, 'success');
+                } else {
+                    log(`❌ No test data found in localStorage.
+
+🔧 Please click "Inject Test Data" first.`, 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ Error checking data structure: ${error.message}`, 'error');
+            }
+        }
+        
+        // Auto-create test user and inject data on page load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                createTestUser();
+                setTimeout(() => {
+                    injectTestData();
+                }, 500);
+            }, 500);
+        });
+    </script>
+</body>
+</html>

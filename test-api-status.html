@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Status Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .warning { background-color: #fff3cd; color: #856404; }
+        .info { background-color: #d1ecf1; color: #0c5460; }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background-color: #0056b3; }
+        button:disabled { background-color: #6c757d; cursor: not-allowed; }
+        .result {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 10px 0;
+            white-space: pre-wrap;
+            font-family: monospace;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Social Listening API Status Test</h1>
+        
+        <div class="status info">
+            <strong>Current Status:</strong> Testing API connectivity and authentication
+        </div>
+
+        <h2>1. Test Next.js API Route</h2>
+        <input type="text" id="searchTerm" placeholder="Enter search term (e.g., 'tiger')" value="tiger">
+        <button onclick="testNextJSAPI()">Test Next.js API</button>
+        <div id="nextjsResult" class="result" style="display: none;"></div>
+
+        <h2>2. Test External APIs (if configured)</h2>
+        <div class="status warning">
+            <strong>Note:</strong> External APIs will only work if you've set up the correct API URL and token in your environment variables.
+        </div>
+        
+        <input type="text" id="apiUrl" placeholder="Enter your API base URL" value="">
+        <input type="text" id="apiToken" placeholder="Enter your API token" value="ynjXb8sa7fImKelP">
+        
+        <button onclick="testInstagramAPI()">Test Instagram API</button>
+        <button onclick="testYouTubeAPI()">Test YouTube API</button>
+        <button onclick="testTikTokAPI()">Test TikTok API</button>
+        
+        <div id="externalResults" class="result" style="display: none;"></div>
+
+        <h2>3. Test Frontend Integration</h2>
+        <button onclick="testFrontend()">Open Social Listening Page</button>
+        <div class="status info">
+            This will open the social listening page where you can test the full integration.
+        </div>
+
+        <h2>4. Configuration Help</h2>
+        <div class="status info">
+            <strong>To fix API issues:</strong><br>
+            1. Create a <code>.env.local</code> file in your project root<br>
+            2. Add: <code>NEXT_PUBLIC_ENSEMBLE_API_URL=https://your-actual-api-url.com</code><br>
+            3. Add: <code>NEXT_PUBLIC_ENSEMBLE_TOKEN=ynjXb8sa7fImKelP</code><br>
+            4. Restart your Next.js server
+        </div>
+    </div>
+
+    <script>
+        async function testNextJSAPI() {
+            const searchTerm = document.getElementById('searchTerm').value;
+            const resultDiv = document.getElementById('nextjsResult');
+            
+            resultDiv.style.display = 'block';
+            resultDiv.textContent = 'Testing Next.js API...';
+            
+            try {
+                const response = await fetch('http://localhost:3000/api/ensemble-search', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer test-token'
+                    },
+                    body: JSON.stringify({ keyword: searchTerm })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `✅ Next.js API Working!\n\nStatus: ${response.status}\nResponse: ${JSON.stringify(data, null, 2)}`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `❌ Next.js API Error\n\nStatus: ${response.status}\nError: ${JSON.stringify(data, null, 2)}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ Connection Error\n\n${error.message}`;
+            }
+        }
+
+        async function testExternalAPI(platform, endpoint, params) {
+            const apiUrl = document.getElementById('apiUrl').value;
+            const token = document.getElementById('apiToken').value;
+            const resultDiv = document.getElementById('externalResults');
+            
+            if (!apiUrl) {
+                resultDiv.style.display = 'block';
+                resultDiv.className = 'result warning';
+                resultDiv.textContent = 'Please enter your API base URL first';
+                return;
+            }
+            
+            resultDiv.style.display = 'block';
+            resultDiv.textContent = `Testing ${platform} API...`;
+            
+            try {
+                const url = new URL(endpoint, apiUrl);
+                Object.keys(params).forEach(key => url.searchParams.append(key, params[key]));
+                
+                const response = await fetch(url.toString());
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `✅ ${platform} API Working!\n\nStatus: ${response.status}\nPosts Found: ${data?.data?.posts?.length || 0}\nResponse: ${JSON.stringify(data, null, 2)}`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `❌ ${platform} API Error\n\nStatus: ${response.status}\nError: ${JSON.stringify(data, null, 2)}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `❌ ${platform} Connection Error\n\n${error.message}`;
+            }
+        }
+
+        function testInstagramAPI() {
+            testExternalAPI('Instagram', '/instagram/search', {
+                text: document.getElementById('searchTerm').value,
+                token: document.getElementById('apiToken').value
+            });
+        }
+
+        function testYouTubeAPI() {
+            testExternalAPI('YouTube', '/youtube/search', {
+                keyword: document.getElementById('searchTerm').value,
+                depth: 1,
+                start_cursor: '',
+                period: 'overall',
+                sorting: 'relevance',
+                get_additional_info: false,
+                token: document.getElementById('apiToken').value
+            });
+        }
+
+        function testTikTokAPI() {
+            testExternalAPI('TikTok', '/tt/hashtag/posts', {
+                name: document.getElementById('searchTerm').value,
+                cursor: 0,
+                token: document.getElementById('apiToken').value
+            });
+        }
+
+        function testFrontend() {
+            window.open('http://localhost:3000/dashboard/social-listening', '_blank');
+        }
+
+        // Auto-test Next.js API on load
+        window.onload = function() {
+            testNextJSAPI();
+        };
+    </script>
+</body>
+</html>
+
+

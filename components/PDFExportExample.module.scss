@@ -1,0 +1,34 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.controls {
+  display: flex;
+  justify-content: flex-end;
+  padding: 10px 0;
+}
+
+.pdfTarget {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  
+  // Ensure the PDF template renders correctly
+  .pdfTemplate {
+    box-shadow: none;
+    border: none;
+    margin: 0;
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .pdfTarget {
+    border-radius: 4px;
+    box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+  }
+}

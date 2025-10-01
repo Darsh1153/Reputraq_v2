@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trace Data Flow</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .status {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+            width: 100%;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        .flow-step {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #007bff;
+        }
+        .flow-step h4 {
+            margin: 0 0 10px 0;
+            color: #007bff;
+        }
+        .flow-step.completed {
+            border-left-color: #28a745;
+            background: #d4edda;
+        }
+        .flow-step.failed {
+            border-left-color: #dc3545;
+            background: #f8d7da;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Trace Data Flow</h1>
+        
+        <div class="status warning">
+            <strong>🎯 Issue Found:</strong><br>
+            The cron manager is cleaning up historical data older than 30 days, but it's showing "undefined" records being deleted. This suggests a data structure issue.
+        </div>
+        
+        <div class="flow-step">
+            <h4>Step 1: Check User & Keywords</h4>
+            <p>Verify user exists and has keywords configured.</p>
+            <button onclick="checkUserAndKeywords()">Check User & Keywords</button>
+        </div>
+        
+        <div class="flow-step">
+            <h4>Step 2: Check Database Tables</h4>
+            <p>Verify if data exists in users.monitoringData and historical tables.</p>
+            <button onclick="checkDatabaseTables()">Check Database Tables</button>
+        </div>
+        
+        <div class="flow-step">
+            <h4>Step 3: Trigger Data Collection</h4>
+            <p>Collect fresh data and trace the entire process.</p>
+            <button onclick="triggerDataCollection()">Trigger Data Collection</button>
+        </div>
+        
+        <div class="flow-step">
+            <h4>Step 4: Check Redux Population</h4>
+            <p>Verify if dashboard populates Redux from database/localStorage.</p>
+            <button onclick="checkReduxPopulation()">Check Redux Population</button>
+        </div>
+        
+        <div class="flow-step">
+            <h4>Step 5: Test Historical Data Page</h4>
+            <p>Verify if Historical Data page uses Redux/localStorage data.</p>
+            <button onclick="testHistoricalDataPage()">Test Historical Data Page</button>
+        </div>
+        
+        <div class="button-group">
+            <button onclick="runFullTrace()">🚀 Run Full Trace</button>
+            <button onclick="checkCleanupIssue()">🧹 Check Cleanup Issue</button>
+            <button onclick="createTestData()">📝 Create Test Data</button>
+            <button onclick="checkAllAPIs()">🔍 Check All APIs</button>
+        </div>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `<div class="result ${type}">${message}</div>`;
+        }
+        
+        async function checkUserAndKeywords() {
+            try {
+                const userData = localStorage.getItem('user');
+                if (!userData) {
+                    log('❌ No user found in localStorage.', 'error');
+                    return;
+                }
+                
+                const user = JSON.parse(userData);
+                const token = btoa(JSON.stringify({ userId: user.id }));
+                
+                log('🔍 Checking user and keywords...\n', 'info');
+                
+                // Check keywords API
+                const keywordsResponse = await fetch('/api/keywords', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                let report = '📊 User & Keywords Check:\n\n';
+                
+                report += `👤 User Info:\n`;
+                report += `   - ID: ${user.id}\n`;
+                report += `   - Name: ${user.name}\n`;
+                report += `   - Email: ${user.email}\n`;
+                report += `   - Plan: ${user.plan}\n`;
+                report += `   - Status: ${user.status}\n`;
+                report += `   - Keywords (localStorage): ${user.keywords?.join(', ') || 'None'}\n\n`;
+                
+                if (keywordsResponse.ok) {
+                    const keywords = await keywordsResponse.json();
+                    report += `🔑 Keywords (Database):\n`;
+                    report += `   - Status: ${keywordsResponse.status}\n`;
+                    report += `   - Count: ${keywords.length}\n`;
+                    report += `   - Keywords: ${keywords.map(k => k.keyword).join(', ')}\n\n`;
+                    
+                    if (keywords.length === 0) {
+                        report += `❌ No keywords found in database!\n`;
+                        report += `💡 This explains why data collection might fail.\n`;
+                        report += `🔧 Solution: Add keywords first.\n\n`;
+                    }
+                } else {
+                    report += `❌ Keywords API: Failed (${keywordsResponse.status})\n\n`;
+                }
+                
+                report += `💡 Analysis:\n`;
+                report += `- User must have keywords to collect data\n`;
+                report += `- Keywords are stored in the keywords table\n`;
+                report += `- Data collection uses these keywords to fetch news/social data\n`;
+                
+                log(report, 'warning');
+                
+            } catch (error) {
+                log(`❌ Error checking user and keywords: ${error.message}
+
+🔍 This usually indicates the server is not running.`, 'error');
+            }
+        }
+        
+        async function checkDatabaseTables() {
+            try {
+                const userData = localStorage.getItem('user');
+                if (!userData) {
+                    log('❌ No user found in localStorage.', 'error');
+                    return;
+                }
+                
+                const user = JSON.parse(userData);
+                const token = btoa(JSON.stringify({ userId: user.id }));
+                
+                log('🔍 Checking database tables...\n', 'info');
+                
+                // Check multiple endpoints
+                const endpoints = [
+                    { name: 'Monitoring Data (users.monitoringData)', url: '/api/data/monitoring' },
+                    { name: 'Historical Data (historical tables)', url: '/api/historical-data' },
+                    { name: 'Collection Jobs', url: '/api/cron/history' }
+                ];
+                
+                let report = '📊 Database Tables Check:\n\n';
+                
+                for (const endpoint of endpoints) {
+                    try {
+                        const response = await fetch(endpoint.url, {
+                            headers: {
+                                'Authorization': `Bearer ${token}`
+                            }
+                        });
+                        
+                        if (response.ok) {
+                            const data = await response.json();
+                            report += `✅ ${endpoint.name}:\n`;
+                            report += `   - Status: ${response.status}\n`;
+                            
+                            if (endpoint.name.includes('Monitoring')) {
+                                const monitoringData = data.monitoringData || [];
+                                report += `   - Keywords: ${monitoringData.length}\n`;
+                                report += `   - Total Articles: ${monitoringData.reduce((sum, item) => sum + (item.newsData?.results?.length || 0), 0)}\n`;
+                                report += `   - Total Social: ${monitoringData.reduce((sum, item) => sum + (item.socialData?.data?.length || 0), 0)}\n`;
+                            } else if (endpoint.name.includes('Historical')) {
+                                const historicalData = data.data || {};
+                                report += `   - News Articles: ${historicalData.news?.length || 0}\n`;
+                                report += `   - Social Posts: ${historicalData.social?.length || 0}\n`;
+                                report += `   - Total News: ${historicalData.totalNews || 0}\n`;
+                                report += `   - Total Social: ${historicalData.totalSocial || 0}\n`;
+                            } else if (endpoint.name.includes('Collection Jobs')) {
+                                const jobs = data.jobs || [];
+                                report += `   - Collection Jobs: ${jobs.length}\n`;
+                                if (jobs.length > 0) {
+                                    report += `   - Latest Job: ${jobs[0].status} (${jobs[0].totalArticles} articles)\n`;
+                                }
+                            }
+                            report += '\n';
+                        } else {
+                            report += `❌ ${endpoint.name}: Failed (${response.status})\n\n`;
+                        }
+                    } catch (error) {
+                        report += `❌ ${endpoint.name}: Error - ${error.message}\n\n`;
+                    }
+                }
+                
+                report += `💡 Analysis:\n`;
+                report += `- Monitoring Data: Dashboard data (users.monitoringData)\n`;
+                report += `- Historical Data: Long-term storage (historical tables)\n`;
+                report += `- Collection Jobs: Tracking data collection runs\n`;
+                report += `- If both are empty: No data collection has occurred\n`;
+                report += `- If monitoring has data but historical is empty: Data collection issue\n`;
+                
+                log(report, 'warning');
+                
+            } catch (error) {
+                log(`❌ Error checking database tables: ${error.message}`, 'error');
+            }
+        }
+        
+        async function triggerDataCollection() {
+            try {
+                const userData = localStorage.getItem('user');
+                if (!userData) {
+                    log('❌ No user found in localStorage.', 'error');
+                    return;
+                }
+                
+                const user = JSON.parse(userData);
+                const token = btoa(JSON.stringify({ userId: user.id }));
+                
+                log('🚀 Triggering data collection...\n', 'info');
+                
+                const response = await fetch('/api/data/collect', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    
+                    log(`✅ Data Collection Successful!
+
+📊 Collection Results:
+- Status: ${response.status}
+- Message: ${result.message}
+- Collection Job ID: ${result.collectionJobId}
+- Keywords Processed: ${result.data?.length || 0}
+
+📋 Data Storage:
+✅ Dashboard Data: Updated in users.monitoringData
+✅ Historical News: Saved to historical_news_data table
+✅ Historical Social: Saved to historical_social_data table
+✅ Collection Job: Recorded in data_collection_jobs table
+
+🎯 Next Steps:
+1. Check database tables again
+2. Check Redux population
+3. Test Historical Data page
+
+💡 The data should now be available in both dashboard and historical tables.`, 'success');
+                } else {
+                    const errorData = await response.json();
+                    log(`❌ Data Collection Failed!
+
+Status: ${response.status}
+Error: ${errorData.error}
+
+🔍 This might indicate:
+- No keywords configured for user
+- Database connection issues
+- Server configuration problems
+- Data collection service issues
+
+💡 Check if user has keywords configured first.`, 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ Error triggering data collection: ${error.message}
+
+🔍 This usually indicates the server is not running.`, 'error');
+            }
+        }
+        
+        async function checkReduxPopulation() {
+            try {
+                log('🔍 Checking Redux population...\n', 'info');
+                
+                // Check localStorage for various data sources
+                const reduxState = localStorage.getItem('redux-state');
+                const reduxArticles = localStorage.getItem('reduxArticles');
+                const monitoringData = localStorage.getItem('monitoringData');
+                const testMonitoringData = localStorage.getItem('testMonitoringData');
+                
+                let report = '📊 Redux Population Check:\n\n';
+                
+                report += `💾 LocalStorage Data Sources:\n`;
+                report += `   - redux-state: ${reduxState ? 'Found' : 'Not found'}\n`;
+                report += `   - reduxArticles: ${reduxArticles ? 'Found' : 'Not found'}\n`;
+                report += `   - monitoringData: ${monitoringData ? 'Found' : 'Not found'}\n`;
+                report += `   - testMonitoringData: ${testMonitoringData ? 'Found' : 'Not found'}\n\n`;
+                
+                if (reduxState) {
+                    const state = JSON.parse(reduxState);
+                    report += `📊 Redux State:\n`;
+                    report += `   - Articles: ${state.news?.articles?.length || 0}\n`;
+                    report += `   - Social Posts: ${state.news?.socialPosts?.length || 0}\n`;
+                    report += `   - Last Updated: ${state.news?.lastUpdated || 'Never'}\n`;
+                    report += `   - Loading: ${state.news?.loading || false}\n`;
+                    report += `   - Error: ${state.news?.error || 'None'}\n\n`;
+                }
+                
+                if (reduxArticles) {
+                    const articles = JSON.parse(reduxArticles);
+                    report += `📊 Redux Articles:\n`;
+                    report += `   - Total Articles: ${articles.length}\n`;
+                    report += `   - Keywords: ${[...new Set(articles.map(a => a.keyword))].join(', ')}\n`;
+                    report += `   - Sample Titles: ${articles.slice(0, 3).map(a => a.title).join(', ')}\n\n`;
+                }
+                
+                if (monitoringData) {
+                    const data = JSON.parse(monitoringData);
+                    report += `📊 Monitoring Data:\n`;
+                    report += `   - Keywords: ${data.length}\n`;
+                    report += `   - Total Articles: ${data.reduce((sum, item) => sum + (item.newsData?.results?.length || 0), 0)}\n`;
+                    report += `   - Keywords: ${data.map(item => item.keyword).join(', ')}\n\n`;
+                }
+                
+                report += `💡 Analysis:\n`;
+                report += `- Dashboard should populate Redux from monitoringData\n`;
+                report += `- Historical Data should use Redux articles\n`;
+                report += `- If Redux is empty: Dashboard not populating or data cleaned up\n`;
+                report += `- Cleanup process might be removing data\n`;
+                
+                log(report, 'warning');
+                
+            } catch (error) {
+                log(`❌ Error checking Redux population: ${error.message}`, 'error');
+            }
+        }
+        
+        function testHistoricalDataPage() {
+            const url = window.location.origin + '/dashboard/historical';
+            window.open(url, '_blank');
+            
+            log(`🚀 Historical Data Page opened: ${url}
+
+📋 What to Check:
+1. Debug info should show data counts
+2. Should show data source (Redux/localStorage/API)
+3. Articles should be displayed
+4. No "No Data Found" message
+
+🔍 Expected Console Output:
+- "🔍 Historical Data Component - Checking Redux data..."
+- "📊 Redux articles: Array [...]"
+- "📊 Using Redux/localStorage data directly (no API call)"
+
+💡 If you see "No Data Found":
+- Redux store is empty
+- localStorage.reduxArticles is empty
+- API is returning empty data
+- Data was cleaned up by cron manager
+
+💡 The cleanup process might be removing data:
+- Cron manager deletes data older than 30 days
+- But it's showing "undefined" records being deleted
+- This suggests a data structure issue`, 'info');
+        }
+        
+        async function runFullTrace() {
+            log('🚀 Running full data flow trace...\n', 'info');
+            
+            await checkUserAndKeywords();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            await checkDatabaseTables();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            await checkReduxPopulation();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            log('\n🎯 Full trace complete!\n\nNext steps:\n1. If no keywords: Add keywords first\n2. If no data: Trigger data collection\n3. If data exists but Redux is empty: Check dashboard population\n4. If cleanup is removing data: Check cron manager settings', 'info');
+        }
+        
+        function checkCleanupIssue() {
+            log(`🧹 Cleanup Issue Analysis:
+
+📊 Issue Identified:
+- Cron manager is cleaning up historical data older than 30 days
+- Console shows: "🧹 Cleaned up old data: undefined news records, undefined social records"
+- This suggests a data structure issue in the cleanup query
+
+🔍 Possible Causes:
+1. Database schema mismatch
+2. Data type issues in collectedAt field
+3. Query syntax error
+4. Missing data in historical tables
+
+💡 Solutions:
+1. Check database schema for historical tables
+2. Verify collectedAt field data types
+3. Check if data is being saved with correct timestamps
+4. Review cron manager cleanup logic
+
+🔧 Immediate Fix:
+- Disable cleanup temporarily
+- Check what data exists in historical tables
+- Verify data structure matches schema
+
+💡 The cleanup process should not show "undefined" records.
+This indicates a fundamental issue with the data structure.`, 'warning');
+        }
+        
+        function createTestData() {
+            try {
+                // Create test user
+                const testUser = {
+                    id: 9,
+                    name: "Test User",
+                    email: "test@example.com",
+                    plan: "pro",
+                    status: "approved",
+                    keywords: ["bmw", "artificial intelligence", "climate change"]
+                };
+                localStorage.setItem('user', JSON.stringify(testUser));
+                
+                // Create test articles
+                const testArticles = [
+                    {
+                        id: 1,
+                        userId: 9,
+                        keyword: "bmw",
+                        articleId: 1001,
+                        title: "BMW Unveils Revolutionary Electric Vehicle Technology",
+                        description: "BMW has announced breakthrough battery technology.",
+                        url: "https://example.com/bmw-electric",
+                        publishedAt: new Date().toISOString(),
+                        sourceName: "Auto News Daily",
+                        sentimentScore: 25,
+                        sentimentLabel: "positive",
+                        createdAt: new Date().toISOString(),
+                        updatedAt: new Date().toISOString()
+                    }
+                ];
+                
+                localStorage.setItem('reduxArticles', JSON.stringify(testArticles));
+                
+                log(`✅ Test data created!
+
+📊 Test Data:
+- User: ${testUser.name} (ID: ${testUser.id})
+- Articles: ${testArticles.length}
+- Keywords: ${testUser.keywords.join(', ')}
+
+📋 Data Stored:
+✅ localStorage.user
+✅ localStorage.reduxArticles
+
+🎯 This will help test the data flow without server dependencies.`, 'success');
+                
+            } catch (error) {
+                log(`❌ Error creating test data: ${error.message}`, 'error');
+            }
+        }
+        
+        async function checkAllAPIs() {
+            try {
+                const userData = localStorage.getItem('user');
+                if (!userData) {
+                    log('❌ No user found in localStorage.', 'error');
+                    return;
+                }
+                
+                const user = JSON.parse(userData);
+                const token = btoa(JSON.stringify({ userId: user.id }));
+                
+                log('🔍 Checking all APIs...\n', 'info');
+                
+                const apis = [
+                    { name: 'Keywords', url: '/api/keywords' },
+                    { name: 'Monitoring Data', url: '/api/data/monitoring' },
+                    { name: 'Historical Data', url: '/api/historical-data' },
+                    { name: 'Data Collection', url: '/api/data/collect', method: 'POST' },
+                    { name: 'Cron Settings', url: '/api/cron' },
+                    { name: 'Cron History', url: '/api/cron/history' }
+                ];
+                
+                let report = '📊 All APIs Check:\n\n';
+                
+                for (const api of apis) {
+                    try {
+                        const options = {
+                            headers: {
+                                'Authorization': `Bearer ${token}`
+                            }
+                        };
+                        
+                        if (api.method === 'POST') {
+                            options.method = 'POST';
+                            options.headers['Content-Type'] = 'application/json';
+                        }
+                        
+                        const response = await fetch(api.url, options);
+                        
+                        if (response.ok) {
+                            const data = await response.json();
+                            report += `✅ ${api.name}:\n`;
+                            report += `   - Status: ${response.status}\n`;
+                            report += `   - Response: ${JSON.stringify(data).substring(0, 150)}...\n\n`;
+                        } else {
+                            report += `❌ ${api.name}: Failed (${response.status})\n\n`;
+                        }
+                    } catch (error) {
+                        report += `❌ ${api.name}: Error - ${error.message}\n\n`;
+                    }
+                }
+                
+                log(report, 'info');
+                
+            } catch (error) {
+                log(`❌ Error checking APIs: ${error.message}`, 'error');
+            }
+        }
+        
+        // Auto-create test user on page load
+        window.addEventListener('load', () => {
+            const testUser = {
+                id: 9,
+                name: "Test User",
+                email: "test@example.com",
+                plan: "pro",
+                status: "approved",
+                keywords: ["bmw", "artificial intelligence", "climate change"]
+            };
+            
+            localStorage.setItem('user', JSON.stringify(testUser));
+            
+            setTimeout(() => {
+                log('✅ Test user created automatically. Ready for data flow tracing!', 'success');
+            }, 500);
+        });
+    </script>
+</body>
+</html>

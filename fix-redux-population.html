@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fix Redux Population</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .status {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+            width: 100%;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Fix Redux Population</h1>
+        
+        <div class="status warning">
+            <strong>🎯 Root Cause Found:</strong><br>
+            The Redux store is empty because the dashboard is looking for `localStorage.monitoringData` but the data might be stored under a different key. Let's fix this.
+        </div>
+        
+        <div class="test-section">
+            <h3>🔍 Debug Steps:</h3>
+            <p>The dashboard should populate Redux from localStorage, but it's not finding the data.</p>
+            <div class="button-group">
+                <button onclick="checkLocalStorage()">Check LocalStorage</button>
+                <button onclick="createMonitoringData()">Create Monitoring Data</button>
+                <button onclick="testDashboard()">Test Dashboard</button>
+                <button onclick="testHistoricalPage()">Test Historical Page</button>
+            </div>
+        </div>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `<div class="result ${type}">${message}</div>`;
+        }
+        
+        function checkLocalStorage() {
+            try {
+                log('🔍 Checking localStorage for monitoring data...\n', 'info');
+                
+                const keys = Object.keys(localStorage);
+                let report = '📊 LocalStorage Contents:\n\n';
+                
+                for (const key of keys) {
+                    const value = localStorage.getItem(key);
+                    try {
+                        const parsed = JSON.parse(value);
+                        report += `✅ ${key}:\n`;
+                        if (Array.isArray(parsed)) {
+                            report += `   - Array with ${parsed.length} items\n`;
+                            if (parsed.length > 0 && parsed[0].keyword) {
+                                report += `   - Sample keyword: ${parsed[0].keyword}\n`;
+                                if (parsed[0].newsData?.results) {
+                                    report += `   - News articles: ${parsed[0].newsData.results.length}\n`;
+                                }
+                            }
+                        } else if (typeof parsed === 'object') {
+                            report += `   - Object with keys: ${Object.keys(parsed).join(', ')}\n`;
+                            if (parsed.articles) {
+                                report += `   - Articles: ${parsed.articles.length}\n`;
+                            }
+                        }
+                        report += '\n';
+                    } catch {
+                        report += `📝 ${key}: ${value.substring(0, 100)}${value.length > 100 ? '...' : ''}\n\n`;
+                    }
+                }
+                
+                // Check specifically for monitoring data
+                const monitoringData = localStorage.getItem('monitoringData');
+                const testMonitoringData = localStorage.getItem('testMonitoringData');
+                
+                report += `🔍 Monitoring Data Check:\n`;
+                report += `- monitoringData: ${monitoringData ? 'Found' : 'Not found'}\n`;
+                report += `- testMonitoringData: ${testMonitoringData ? 'Found' : 'Not found'}\n\n`;
+                
+                if (monitoringData) {
+                    const data = JSON.parse(monitoringData);
+                    report += `📊 monitoringData contents:\n`;
+                    report += `- Keywords: ${data.length}\n`;
+                    report += `- Total articles: ${data.reduce((sum, item) => sum + (item.newsData?.results?.length || 0), 0)}\n`;
+                }
+                
+                log(report, 'info');
+                
+            } catch (error) {
+                log(`❌ Error checking localStorage: ${error.message}`, 'error');
+            }
+        }
+        
+        function createMonitoringData() {
+            try {
+                // Create monitoring data in the exact format the dashboard expects
+                const monitoringData = [
+                    {
+                        keyword: "bmw",
+                        newsData: {
+                            results: [
+                                {
+                                    id: "bmw_001",
+                                    title: "BMW Unveils Revolutionary Electric Vehicle Technology",
+                                    description: "BMW has announced breakthrough battery technology that promises to revolutionize the electric vehicle market with faster charging and longer range capabilities.",
+                                    url: "https://example.com/bmw-electric",
+                                    publishedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+                                    source: {
+                                        name: "Auto News Daily",
+                                        logo: "https://via.placeholder.com/50x50/007bff/ffffff?text=AND"
+                                    },
+                                    image: "https://via.placeholder.com/400x200/007bff/ffffff?text=BMW+Electric",
+                                    sentiment: {
+                                        score: 25,
+                                        label: "positive"
+                                    },
+                                    readTime: 6,
+                                    isBreaking: true,
+                                    categories: ["Automotive", "Technology"],
+                                    topics: ["Electric Vehicles", "Innovation"],
+                                    engagement: { views: 1850, shares: 67, comments: 34 }
+                                },
+                                {
+                                    id: "bmw_002",
+                                    title: "BMW Reports Record Sales in Q4 2024",
+                                    description: "BMW has reported its highest quarterly sales figures in company history, driven by strong demand for electric and hybrid vehicles.",
+                                    url: "https://example.com/bmw-sales",
+                                    publishedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+                                    source: {
+                                        name: "Business Automotive",
+                                        logo: "https://via.placeholder.com/50x50/28a745/ffffff?text=BA"
+                                    },
+                                    image: "https://via.placeholder.com/400x200/28a745/ffffff?text=BMW+Sales",
+                                    sentiment: {
+                                        score: 18,
+                                        label: "positive"
+                                    },
+                                    readTime: 4,
+                                    isBreaking: false,
+                                    categories: ["Business", "Automotive"],
+                                    topics: ["Sales", "Financial Results"],
+                                    engagement: { views: 1200, shares: 45, comments: 23 }
+                                }
+                            ]
+                        },
+                        socialData: { data: [] },
+                        timestamp: new Date().toISOString()
+                    },
+                    {
+                        keyword: "artificial intelligence",
+                        newsData: {
+                            results: [
+                                {
+                                    id: "ai_001",
+                                    title: "AI Breakthrough: New Model Achieves Human-Level Reasoning",
+                                    description: "Researchers have developed an AI model that demonstrates human-level reasoning capabilities across multiple domains including mathematics, science, and creative writing.",
+                                    url: "https://example.com/ai-breakthrough",
+                                    publishedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+                                    source: {
+                                        name: "Tech Innovation Weekly",
+                                        logo: "https://via.placeholder.com/50x50/6f42c1/ffffff?text=TIW"
+                                    },
+                                    image: "https://via.placeholder.com/400x200/6f42c1/ffffff?text=AI+Breakthrough",
+                                    sentiment: {
+                                        score: 28,
+                                        label: "positive"
+                                    },
+                                    readTime: 8,
+                                    isBreaking: true,
+                                    categories: ["Technology", "AI"],
+                                    topics: ["Machine Learning", "Research"],
+                                    engagement: { views: 3200, shares: 145, comments: 89 }
+                                }
+                            ]
+                        },
+                        socialData: { data: [] },
+                        timestamp: new Date().toISOString()
+                    }
+                ];
+                
+                // Store in localStorage with the key the dashboard expects
+                localStorage.setItem('monitoringData', JSON.stringify(monitoringData));
+                
+                log(`✅ Monitoring Data Created Successfully!
+
+📊 Data Structure:
+- Keywords: ${monitoringData.length}
+- BMW Articles: ${monitoringData[0].newsData.results.length}
+- AI Articles: ${monitoringData[1].newsData.results.length}
+- Total Articles: ${monitoringData.reduce((sum, item) => sum + item.newsData.results.length, 0)}
+
+📋 Article Titles:
+${monitoringData.flatMap(item => item.newsData.results.map(article => `- ${article.title} (${item.keyword})`)).join('\n')}
+
+📋 Data Stored In:
+✅ localStorage.monitoringData (dashboard will find this)
+
+🎯 The dashboard should now:
+1. ✅ Find monitoringData in localStorage
+2. ✅ Transform articles to Redux format
+3. ✅ Dispatch articles to Redux store
+4. ✅ Historical Data page should use Redux data
+
+💡 This matches exactly what the SleekDashboard.fetchMonitoringData() function expects!`, 'success');
+                
+            } catch (error) {
+                log(`❌ Error creating monitoring data: ${error.message}`, 'error');
+            }
+        }
+        
+        function testDashboard() {
+            const url = window.location.origin + '/dashboard';
+            window.open(url, '_blank');
+            
+            log(`🚀 Dashboard opened: ${url}
+
+📋 Expected Results:
+1. ✅ Dashboard should load monitoring data from localStorage
+2. ✅ Console should show: "✅ Monitoring data loaded from localStorage"
+3. ✅ Console should show: "📊 Articles dispatched to Redux: X"
+4. ✅ News Blog Monitoring should display articles
+5. ✅ Redux store should be populated
+
+🔍 What to Look For:
+- Check browser console for Redux dispatch logs
+- News Blog Monitoring section should show articles
+- Dashboard should not show "No data found"
+
+💡 The dashboard will:
+1. Call fetchMonitoringData()
+2. Find localStorage.monitoringData
+3. Transform articles to Redux format
+4. Dispatch setArticles() to Redux
+5. Display articles in News Blog Monitoring`, 'info');
+        }
+        
+        function testHistoricalPage() {
+            const url = window.location.origin + '/dashboard/historical';
+            window.open(url, '_blank');
+            
+            log(`🚀 Historical Data Page opened: ${url}
+
+📋 Expected Results:
+1. ✅ Debug info should show "🔄 Using Redux Store Data (No API)"
+2. ✅ News: 3 articles (should show count > 0)
+3. ✅ Social: 0 posts
+4. ✅ Data Type: all
+5. ✅ Selected Keyword: all
+6. ✅ Total News: 3
+7. ✅ Total Social: 0
+
+🔍 What to Look For:
+- Debug Info section showing data counts
+- "🔄 Using Redux Store Data (No API)" indicator
+- News Articles section with 3 articles
+- No "No Data Found" message
+
+💡 This should work because:
+1. Dashboard populated Redux from localStorage.monitoringData
+2. Historical Data component finds Redux articles
+3. Uses Redux data directly (no API calls)
+4. Transforms and displays articles
+
+💡 If it still shows "✅ Using API Data":
+- Redux store might not be populated
+- Check dashboard console logs
+- Verify localStorage.monitoringData exists`, 'info');
+        }
+        
+        // Auto-create test user on page load
+        window.addEventListener('load', () => {
+            const testUser = {
+                id: 9,
+                name: "Test User",
+                email: "test@example.com",
+                plan: "pro",
+                status: "approved",
+                keywords: ["bmw", "artificial intelligence", "climate change"]
+            };
+            
+            localStorage.setItem('user', JSON.stringify(testUser));
+            
+            setTimeout(() => {
+                log('✅ Test user created automatically. Ready to fix Redux population!', 'success');
+            }, 500);
+        });
+    </script>
+</body>
+</html>

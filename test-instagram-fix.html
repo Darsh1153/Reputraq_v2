@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram Data Processing Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .result { background: #f5f5f5; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        button { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin: 5px; }
+        button:hover { background: #0056b3; }
+        pre { white-space: pre-wrap; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Instagram Data Processing Test</h1>
+    
+    <p>This test simulates your actual Instagram API response and shows how it will be processed.</p>
+    
+    <button onclick="testInstagramProcessing()">Test Instagram Data Processing</button>
+    <button onclick="testWithRealAPI()">Test with Real API (if configured)</button>
+    
+    <div id="result" class="result" style="display: none;"></div>
+
+    <script>
+        // Simulate your actual Instagram API response
+        const mockInstagramResponse = {
+            "data": {
+                "hashtags": [
+                    {
+                        "position": 1,
+                        "hashtag": {
+                            "name": "dollhouse",
+                            "media_count": 3026922,
+                            "id": 17843781955058479
+                        }
+                    },
+                    {
+                        "position": 14,
+                        "hashtag": {
+                            "name": "dollar",
+                            "media_count": 2820974,
+                            "id": 17841594280072223
+                        }
+                    },
+                    {
+                        "position": 37,
+                        "hashtag": {
+                            "name": "dolly",
+                            "media_count": 1710800,
+                            "id": 17841562948101240
+                        }
+                    }
+                ],
+                "places": [
+                    {
+                        "position": 50,
+                        "place": {
+                            "location": {
+                                "pk": 104818051069841,
+                                "name": "DOLL",
+                                "facebook_places_id": 104818051069841
+                            },
+                            "subtitle": "",
+                            "title": "DOLL"
+                        }
+                    }
+                ],
+                "users": [
+                    {
+                        "position": 0,
+                        "user": {
+                            "username": "twerk_doll______",
+                            "is_verified": false,
+                            "full_name": "",
+                            "pk": "70177655180",
+                            "profile_pic_url": "https://instagram.fcgh24-1.fna.fbcdn.net/v/t51.2885-19/465511068_3839615989609335_1808588683510898900_n.jpg"
+                        }
+                    }
+                ]
+            }
+        };
+
+        function processInstagramData(apiData, searchTerm) {
+            const results = [];
+            
+            if (apiData.platforms?.instagram) {
+                const instagramContent = [];
+                
+                // Process hashtags
+                if (apiData.platforms.instagram.hashtags && apiData.platforms.instagram.hashtags.length > 0) {
+                    const hashtagContent = apiData.platforms.instagram.hashtags.map((item, index) => ({
+                        id: `instagram_hashtag_${searchTerm}_${index}`,
+                        title: `#${item.hashtag.name} - ${item.hashtag.media_count.toLocaleString()} posts`,
+                        description: `Popular hashtag #${item.hashtag.name} with ${item.hashtag.media_count.toLocaleString()} posts on Instagram`,
+                        url: `https://instagram.com/explore/tags/${item.hashtag.name}`,
+                        hashtags: [`#${item.hashtag.name}`, `#${searchTerm.replace(/\s+/g, '')}`, '#instagram'],
+                        engagement: {
+                            view_count: item.hashtag.media_count
+                        }
+                    }));
+                    instagramContent.push(...hashtagContent);
+                }
+                
+                // Process users
+                if (apiData.platforms.instagram.users && apiData.platforms.instagram.users.length > 0) {
+                    const userContent = apiData.platforms.instagram.users.map((item, index) => ({
+                        id: `instagram_user_${searchTerm}_${index}`,
+                        title: `@${item.user.username} - Instagram Profile`,
+                        description: `Instagram user @${item.user.username}${item.user.full_name ? ` (${item.user.full_name})` : ''}`,
+                        url: `https://instagram.com/${item.user.username}`,
+                        profile: {
+                            platform_username: item.user.username,
+                            image_url: item.user.profile_pic_url
+                        }
+                    }));
+                    instagramContent.push(...userContent);
+                }
+                
+                // Process places
+                if (apiData.platforms.instagram.places && apiData.platforms.instagram.places.length > 0) {
+                    const placeContent = apiData.platforms.instagram.places.map((item, index) => ({
+                        id: `instagram_place_${searchTerm}_${index}`,
+                        title: `${item.place.title} - Instagram Location`,
+                        description: `Instagram location: ${item.place.title}${item.place.subtitle ? ` - ${item.place.subtitle}` : ''}`,
+                        url: `https://instagram.com/explore/locations/${item.place.location.pk}`
+                    }));
+                    instagramContent.push(...placeContent);
+                }
+                
+                if (instagramContent.length > 0) {
+                    results.push({
+                        platform: {
+                            id: 'instagram',
+                            name: 'Instagram'
+                        },
+                        content: instagramContent
+                    });
+                }
+            }
+            
+            return results;
+        }
+
+        function testInstagramProcessing() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'block';
+            
+            // Simulate the API response structure
+            const apiResponse = {
+                platforms: {
+                    instagram: mockInstagramResponse.data
+                }
+            };
+            
+            const processedData = processInstagramData(apiResponse, 'doll');
+            
+            resultDiv.className = 'result success';
+            resultDiv.innerHTML = `
+                <h3>✅ Instagram Data Processing Test</h3>
+                <p><strong>Input Data:</strong></p>
+                <pre>${JSON.stringify(mockInstagramResponse, null, 2)}</pre>
+                
+                <p><strong>Processed Results:</strong></p>
+                <pre>${JSON.stringify(processedData, null, 2)}</pre>
+                
+                <p><strong>Summary:</strong></p>
+                <ul>
+                    <li>Hashtags: ${processedData[0]?.content.filter(c => c.id.includes('hashtag')).length || 0}</li>
+                    <li>Users: ${processedData[0]?.content.filter(c => c.id.includes('user')).length || 0}</li>
+                    <li>Places: ${processedData[0]?.content.filter(c => c.id.includes('place')).length || 0}</li>
+                </ul>
+            `;
+        }
+
+        async function testWithRealAPI() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'block';
+            resultDiv.className = 'result';
+            resultDiv.innerHTML = 'Testing with real API...';
+            
+            try {
+                const response = await fetch('http://localhost:3000/api/ensemble-search', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer test-token'
+                    },
+                    body: JSON.stringify({ keyword: 'doll' })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+                        <h3>✅ Real API Test</h3>
+                        <p><strong>API Response:</strong></p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                        
+                        <p><strong>Status:</strong> ${data.success ? 'Success' : 'Failed'}</p>
+                        <p><strong>Instagram Data:</strong> ${data.data?.platforms?.instagram ? 'Present' : 'Missing'}</p>
+                    `;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `
+                        <h3>❌ API Error</h3>
+                        <p>Status: ${response.status}</p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `
+                    <h3>❌ Connection Error</h3>
+                    <p>${error.message}</p>
+                `;
+            }
+        }
+
+        // Auto-run the test on page load
+        window.onload = function() {
+            testInstagramProcessing();
+        };
+    </script>
+</body>
+</html>
+
+

@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Competitor Keywords</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            white-space: pre-wrap;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+        }
+    </style>
+</head>
+<body>
+    <h1>Competitor Keywords API Test</h1>
+    
+    <div class="test-section">
+        <h2>Test 1: Fetch Competitor Keywords</h2>
+        <button onclick="fetchKeywords()">Fetch Keywords</button>
+        <div id="fetchResult" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test 2: Add Competitor Keyword</h2>
+        <input type="text" id="keywordInput" placeholder="Enter competitor keyword" value="Tesla">
+        <button onclick="addKeyword()">Add Keyword</button>
+        <div id="addResult" class="result"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test 3: Delete Competitor Keyword</h2>
+        <input type="number" id="deleteIdInput" placeholder="Enter keyword ID to delete">
+        <button onclick="deleteKeyword()">Delete Keyword</button>
+        <div id="deleteResult" class="result"></div>
+    </div>
+
+    <script>
+        // Mock user data for testing
+        const mockUser = {
+            id: 9,
+            name: "Test User",
+            email: "test@example.com",
+            plan: "free"
+        };
+        
+        // Create auth token
+        const token = btoa(JSON.stringify({ userId: mockUser.id }));
+        
+        async function fetchKeywords() {
+            const resultDiv = document.getElementById('fetchResult');
+            resultDiv.textContent = 'Loading...';
+            
+            try {
+                const response = await fetch('/api/competitor-keywords', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `Success! Found ${data.length} keywords:\n${JSON.stringify(data, null, 2)}`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `Error: ${data.error || data.message || 'Unknown error'}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `Network Error: ${error.message}`;
+            }
+        }
+        
+        async function addKeyword() {
+            const keyword = document.getElementById('keywordInput').value.trim();
+            const resultDiv = document.getElementById('addResult');
+            
+            if (!keyword) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = 'Please enter a keyword';
+                return;
+            }
+            
+            resultDiv.textContent = 'Adding keyword...';
+            
+            try {
+                const response = await fetch('/api/competitor-keywords', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                    },
+                    body: JSON.stringify({ keyword }),
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `Success! Added keyword:\n${JSON.stringify(data, null, 2)}`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `Error: ${data.error || data.message || 'Unknown error'}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `Network Error: ${error.message}`;
+            }
+        }
+        
+        async function deleteKeyword() {
+            const keywordId = document.getElementById('deleteIdInput').value.trim();
+            const resultDiv = document.getElementById('deleteResult');
+            
+            if (!keywordId) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = 'Please enter a keyword ID';
+                return;
+            }
+            
+            resultDiv.textContent = 'Deleting keyword...';
+            
+            try {
+                const response = await fetch(`/api/competitor-keywords?id=${keywordId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.className = 'result success';
+                    resultDiv.textContent = `Success! ${data.message}`;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.textContent = `Error: ${data.error || data.message || 'Unknown error'}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.textContent = `Network Error: ${error.message}`;
+            }
+        }
+        
+        // Auto-fetch keywords on page load
+        window.onload = function() {
+            fetchKeywords();
+        };
+    </script>
+</body>
+</html>

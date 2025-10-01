@@ -1,0 +1,139 @@
+.container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: 24px;
+}
+
+.header {
+  margin-bottom: 32px;
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  color: #1f2937;
+
+  h1 {
+    font-size: 32px;
+    font-weight: 800;
+    margin: 0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  p {
+    font-size: 16px;
+    color: #6b7280;
+    margin: 8px 0 0 0;
+  }
+}
+
+.tabNavigation {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 32px;
+  background: white;
+  padding: 8px;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.tabButton {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 16px 24px;
+  background: transparent;
+  border: none;
+  border-radius: 12px;
+  color: #6b7280;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: #f3f4f6;
+    color: #374151;
+  }
+
+  &.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  }
+}
+
+.tabContent {
+  min-height: 600px;
+}
+
+.historicalTab,
+.cronTab {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  color: #6b7280;
+  font-size: 18px;
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .container {
+    padding: 16px;
+  }
+
+  .title {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+
+    h1 {
+      font-size: 24px;
+    }
+  }
+
+  .tabNavigation {
+    flex-direction: column;
+  }
+
+  .tabButton {
+    justify-content: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .title {
+    h1 {
+      font-size: 20px;
+    }
+
+    p {
+      font-size: 14px;
+    }
+  }
+}

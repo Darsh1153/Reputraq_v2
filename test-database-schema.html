@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Database Schema Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 1000px; margin: 0 auto; }
+        .result { margin: 10px 0; padding: 10px; border-radius: 4px; white-space: pre-wrap; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 4px; }
+        button:hover { background: #0056b3; }
+        input { padding: 8px; margin: 5px; border: 1px solid #ddd; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>🗄️ Database Schema Test</h1>
+    
+    <div>
+        <h2>Test Database Connection and Schema</h2>
+        <button onclick="testDatabase()">Test Database</button>
+        <div id="result" class="result info">Ready to test database...</div>
+    </div>
+
+    <script>
+        async function testDatabase() {
+            try {
+                // Get user from localStorage
+                const user = localStorage.getItem('user');
+                if (!user) {
+                    document.getElementById('result').textContent = 'Please sign in first';
+                    document.getElementById('result').className = 'result error';
+                    return;
+                }
+                
+                const userData = JSON.parse(user);
+                const token = btoa(JSON.stringify({ userId: userData.id }));
+                
+                document.getElementById('result').textContent = 'Testing database connection...';
+                document.getElementById('result').className = 'result info';
+                
+                // Test 1: Try to fetch existing articles
+                const response = await fetch(`/api/news?userId=${userData.id}&limit=5`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    },
+                });
+                
+                const data = await response.json();
+                
+                let resultText = `📊 Database Test Results:\n\n`;
+                resultText += `✅ API Response Status: ${response.status}\n`;
+                resultText += `✅ API Response OK: ${response.ok}\n\n`;
+                
+                if (response.ok) {
+                    resultText += `📰 Articles Found: ${data.articles ? data.articles.length : 0}\n`;
+                    resultText += `📄 Pagination: ${JSON.stringify(data.pagination, null, 2)}\n\n`;
+                    
+                    if (data.articles && data.articles.length > 0) {
+                        resultText += `📝 Sample Article Structure:\n`;
+                        resultText += `${JSON.stringify(data.articles[0], null, 2)}\n\n`;
+                    }
+                    
+                    resultText += `✅ Database connection and schema appear to be working correctly!`;
+                    document.getElementById('result').className = 'result success';
+                } else {
+                    resultText += `❌ Database Error: ${data.error || 'Unknown error'}\n`;
+                    resultText += `📊 Full Response: ${JSON.stringify(data, null, 2)}`;
+                    document.getElementById('result').className = 'result error';
+                }
+                
+                document.getElementById('result').textContent = resultText;
+                
+            } catch (error) {
+                document.getElementById('result').textContent = `❌ ERROR: ${error.message}`;
+                document.getElementById('result').className = 'result error';
+            }
+        }
+        
+        // Check if user is signed in
+        window.onload = function() {
+            const user = localStorage.getItem('user');
+            if (!user) {
+                document.getElementById('result').textContent = '❌ Please sign in first to test database';
+                document.getElementById('result').className = 'result error';
+            } else {
+                const userData = JSON.parse(user);
+                document.getElementById('result').textContent = `✅ Signed in as: ${userData.name} (ID: ${userData.id})\nReady to test database!`;
+                document.getElementById('result').className = 'result success';
+            }
+        };
+    </script>
+</body>
+</html>

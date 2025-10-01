@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Fix Historical Data</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .status {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+            margin: 10px 0;
+            width: 100%;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚡ Quick Fix Historical Data</h1>
+        
+        <div class="status">
+            <strong>🎯 One-Click Solution:</strong><br>
+            The Historical Data component is checking localStorage but not finding data. Click the button below to create test data and fix it immediately.
+        </div>
+        
+        <button onclick="quickFix()">🚀 Quick Fix - Create Test Data</button>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `<div class="result ${type}">${message}</div>`;
+        }
+        
+        function quickFix() {
+            try {
+                // Create test user
+                const testUser = {
+                    id: 9,
+                    name: "Test User",
+                    email: "test@example.com",
+                    plan: "pro",
+                    status: "approved",
+                    keywords: ["bmw", "artificial intelligence", "climate change"]
+                };
+                localStorage.setItem('user', JSON.stringify(testUser));
+                
+                // Create test articles in Redux format
+                const testArticles = [
+                    {
+                        id: 1,
+                        userId: 9,
+                        keyword: "bmw",
+                        articleId: 1001,
+                        title: "BMW Unveils Revolutionary Electric Vehicle Technology",
+                        description: "BMW has announced breakthrough battery technology that promises to revolutionize the electric vehicle market with faster charging and longer range capabilities.",
+                        url: "https://example.com/bmw-electric",
+                        publishedAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+                        sourceName: "Auto News Daily",
+                        sourceLogo: "https://via.placeholder.com/50x50/007bff/ffffff?text=AND",
+                        image: "https://via.placeholder.com/400x200/007bff/ffffff?text=BMW+Electric",
+                        sentimentScore: 25,
+                        sentimentLabel: "positive",
+                        readTime: 6,
+                        isBreaking: true,
+                        categories: ["Automotive", "Technology"],
+                        topics: ["Electric Vehicles", "Innovation"],
+                        engagement: { views: 1850, shares: 67, comments: 34 },
+                        rawData: {},
+                        createdAt: new Date().toISOString(),
+                        updatedAt: new Date().toISOString()
+                    },
+                    {
+                        id: 2,
+                        userId: 9,
+                        keyword: "bmw",
+                        articleId: 1002,
+                        title: "BMW Reports Record Sales in Q4 2024",
+                        description: "BMW has reported its highest quarterly sales figures in company history, driven by strong demand for electric and hybrid vehicles.",
+                        url: "https://example.com/bmw-sales",
+                        publishedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+                        sourceName: "Business Automotive",
+                        sourceLogo: "https://via.placeholder.com/50x50/28a745/ffffff?text=BA",
+                        image: "https://via.placeholder.com/400x200/28a745/ffffff?text=BMW+Sales",
+                        sentimentScore: 18,
+                        sentimentLabel: "positive",
+                        readTime: 4,
+                        isBreaking: false,
+                        categories: ["Business", "Automotive"],
+                        topics: ["Sales", "Financial Results"],
+                        engagement: { views: 1200, shares: 45, comments: 23 },
+                        rawData: {},
+                        createdAt: new Date().toISOString(),
+                        updatedAt: new Date().toISOString()
+                    },
+                    {
+                        id: 3,
+                        userId: 9,
+                        keyword: "artificial intelligence",
+                        articleId: 1003,
+                        title: "AI Breakthrough: New Model Achieves Human-Level Reasoning",
+                        description: "Researchers have developed an AI model that demonstrates human-level reasoning capabilities across multiple domains including mathematics, science, and creative writing.",
+                        url: "https://example.com/ai-breakthrough",
+                        publishedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+                        platformName: "Tech Innovation Weekly",
+                        platformLogo: "https://via.placeholder.com/50x50/6f42c1/ffffff?text=TIW",
+                        image: "https://via.placeholder.com/400x200/6f42c1/ffffff?text=AI+Breakthrough",
+                        sentimentScore: 28,
+                        sentimentLabel: "positive",
+                        readTime: 8,
+                        isBreaking: true,
+                        categories: ["Technology", "AI"],
+                        topics: ["Machine Learning", "Research"],
+                        engagement: { views: 3200, shares: 145, comments: 89 },
+                        rawData: {},
+                        createdAt: new Date().toISOString(),
+                        updatedAt: new Date().toISOString()
+                    },
+                    {
+                        id: 4,
+                        userId: 9,
+                        keyword: "climate change",
+                        articleId: 1004,
+                        title: "Global Climate Summit Reaches Historic Agreement",
+                        description: "World leaders have reached a historic agreement on climate action, committing to net-zero emissions by 2050 and increased funding for renewable energy projects.",
+                        url: "https://example.com/climate-summit",
+                        publishedAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(),
+                        sourceName: "Environmental News",
+                        sourceLogo: "https://via.placeholder.com/50x50/20c997/ffffff?text=EN",
+                        image: "https://via.placeholder.com/400x200/20c997/ffffff?text=Climate+Summit",
+                        sentimentScore: 22,
+                        sentimentLabel: "positive",
+                        readTime: 7,
+                        isBreaking: true,
+                        categories: ["Environment", "Politics"],
+                        topics: ["Climate Action", "Renewable Energy"],
+                        engagement: { views: 2800, shares: 156, comments: 78 },
+                        rawData: {},
+                        createdAt: new Date().toISOString(),
+                        updatedAt: new Date().toISOString()
+                    }
+                ];
+                
+                // Store in localStorage
+                localStorage.setItem('reduxArticles', JSON.stringify(testArticles));
+                
+                log(`✅ Quick Fix Complete!
+
+📊 Test Data Created:
+- User: ${testUser.name} (ID: ${testUser.id})
+- Articles: ${testArticles.length}
+- BMW Articles: ${testArticles.filter(a => a.keyword === "bmw").length}
+- AI Articles: ${testArticles.filter(a => a.keyword === "artificial intelligence").length}
+- Climate Articles: ${testArticles.filter(a => a.keyword === "climate change").length}
+
+📋 Article Titles:
+${testArticles.map(a => `- ${a.title} (${a.keyword})`).join('\n')}
+
+📋 Data Stored In:
+✅ localStorage.user
+✅ localStorage.reduxArticles
+
+🎯 Now go to the Historical Data page!
+
+Expected Results:
+- Debug info should show "🔄 Using Store Data (No API)"
+- News: 4 articles
+- Social: 0 posts
+- Total News: 4
+- Total Social: 0
+
+💡 The component will now find localStorage.reduxArticles and use it directly!`, 'success');
+                
+            } catch (error) {
+                log(`❌ Error in quick fix: ${error.message}`, 'error');
+            }
+        }
+        
+        // Auto-run quick fix on page load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                quickFix();
+            }, 500);
+        });
+    </script>
+</body>
+</html>

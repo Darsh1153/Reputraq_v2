@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add BMW Data to Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+            width: 100%;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚗 Add BMW Data to Dashboard</h1>
+        
+        <p><strong>Purpose:</strong> This will add realistic BMW-related news articles to your dashboard so you can see them in the "Recent Activity" section.</p>
+        
+        <button onclick="addBMWData()">🚗 Add BMW News Data</button>
+        <button onclick="goToDashboard()">📈 Go to Dashboard</button>
+        <button onclick="checkData()">🔍 Check Current Data</button>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `<div class="result ${type}">${message}</div>`;
+        }
+        
+        function addBMWData() {
+            try {
+                // Create BMW-specific test data
+                const bmwData = [
+                    {
+                        keyword: "bmw",
+                        newsData: {
+                            results: [
+                                {
+                                    id: "bmw1",
+                                    title: "BMW Unveils Revolutionary Electric Vehicle Technology",
+                                    description: "BMW has announced breakthrough battery technology that promises to revolutionize the electric vehicle market with 500-mile range and 10-minute charging.",
+                                    url: "https://example.com/bmw-electric-breakthrough",
+                                    publishedAt: new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString(), // 1 hour ago
+                                    source: { 
+                                        name: "Auto News Daily",
+                                        logo: "https://via.placeholder.com/50x50/007bff/ffffff?text=AND"
+                                    },
+                                    image: "https://via.placeholder.com/400x200/007bff/ffffff?text=BMW+Electric",
+                                    sentiment: { score: 18, label: "positive" },
+                                    readTime: 6,
+                                    isBreaking: true,
+                                    categories: ["Automotive", "Technology"],
+                                    topics: ["Electric Vehicles", "Innovation"],
+                                    engagement: { views: 1850, shares: 67, comments: 34 }
+                                },
+                                {
+                                    id: "bmw2",
+                                    title: "BMW Reports Record Sales in Q4 2024",
+                                    description: "BMW has reported its highest quarterly sales figures in company history, driven by strong demand for luxury vehicles and SUVs across global markets.",
+                                    url: "https://example.com/bmw-record-sales",
+                                    publishedAt: new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString(), // 3 hours ago
+                                    source: { 
+                                        name: "Business Automotive",
+                                        logo: "https://via.placeholder.com/50x50/28a745/ffffff?text=BA"
+                                    },
+                                    image: "https://via.placeholder.com/400x200/28a745/ffffff?text=BMW+Sales",
+                                    sentiment: { score: 12, label: "positive" },
+                                    readTime: 4,
+                                    isBreaking: false,
+                                    categories: ["Business", "Automotive"],
+                                    topics: ["Sales", "Financial Results"],
+                                    engagement: { views: 1200, shares: 45, comments: 23 }
+                                },
+                                {
+                                    id: "bmw3",
+                                    title: "BMW Recalls 50,000 Vehicles Over Safety Concerns",
+                                    description: "BMW has issued a voluntary recall for approximately 50,000 vehicles due to potential brake system issues discovered during routine safety inspections.",
+                                    url: "https://example.com/bmw-recall",
+                                    publishedAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString(), // 5 hours ago
+                                    source: { 
+                                        name: "Safety First News",
+                                        logo: "https://via.placeholder.com/50x50/dc3545/ffffff?text=SFN"
+                                    },
+                                    image: "https://via.placeholder.com/400x200/dc3545/ffffff?text=BMW+Recall",
+                                    sentiment: { score: -8, label: "negative" },
+                                    readTime: 5,
+                                    isBreaking: true,
+                                    categories: ["Safety", "Automotive"],
+                                    topics: ["Recall", "Safety"],
+                                    engagement: { views: 2100, shares: 89, comments: 156 }
+                                },
+                                {
+                                    id: "bmw4",
+                                    title: "BMW Partners with Tech Giant for Autonomous Driving",
+                                    description: "BMW has announced a strategic partnership with a major technology company to accelerate development of autonomous driving systems.",
+                                    url: "https://example.com/bmw-autonomous-partnership",
+                                    publishedAt: new Date(Date.now() - 7 * 60 * 60 * 1000).toISOString(), // 7 hours ago
+                                    source: { 
+                                        name: "Tech Auto Weekly",
+                                        logo: "https://via.placeholder.com/50x50/6f42c1/ffffff?text=TAW"
+                                    },
+                                    image: "https://via.placeholder.com/400x200/6f42c1/ffffff?text=BMW+Autonomous",
+                                    sentiment: { score: 15, label: "positive" },
+                                    readTime: 7,
+                                    isBreaking: false,
+                                    categories: ["Technology", "Automotive"],
+                                    topics: ["Autonomous Driving", "Partnership"],
+                                    engagement: { views: 950, shares: 34, comments: 18 }
+                                },
+                                {
+                                    id: "bmw5",
+                                    title: "BMW iX SUV Wins Car of the Year Award",
+                                    description: "The BMW iX electric SUV has been awarded Car of the Year by a leading automotive publication, recognizing its innovation and performance.",
+                                    url: "https://example.com/bmw-ix-award",
+                                    publishedAt: new Date(Date.now() - 9 * 60 * 60 * 1000).toISOString(), // 9 hours ago
+                                    source: { 
+                                        name: "Car Awards Today",
+                                        logo: "https://via.placeholder.com/50x50/fd7e14/ffffff?text=CAT"
+                                    },
+                                    image: "https://via.placeholder.com/400x200/fd7e14/ffffff?text=BMW+iX",
+                                    sentiment: { score: 20, label: "positive" },
+                                    readTime: 5,
+                                    isBreaking: false,
+                                    categories: ["Awards", "Automotive"],
+                                    topics: ["Electric SUV", "Recognition"],
+                                    engagement: { views: 1400, shares: 78, comments: 45 }
+                                },
+                                {
+                                    id: "bmw6",
+                                    title: "BMW Announces New Manufacturing Plant in Asia",
+                                    description: "BMW has revealed plans to build a new state-of-the-art manufacturing facility in Asia to meet growing demand for luxury vehicles in the region.",
+                                    url: "https://example.com/bmw-asia-plant",
+                                    publishedAt: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(), // 12 hours ago
+                                    source: { 
+                                        name: "Global Auto News",
+                                        logo: "https://via.placeholder.com/50x50/20c997/ffffff?text=GAN"
+                                    },
+                                    image: "https://via.placeholder.com/400x200/20c997/ffffff?text=BMW+Plant",
+                                    sentiment: { score: 10, label: "positive" },
+                                    readTime: 6,
+                                    isBreaking: false,
+                                    categories: ["Manufacturing", "Business"],
+                                    topics: ["Expansion", "Asia Market"],
+                                    engagement: { views: 1100, shares: 42, comments: 28 }
+                                }
+                            ]
+                        },
+                        socialData: {
+                            data: [
+                                {
+                                    id: "bmw-social1",
+                                    title: "Just test drove the new BMW iX - absolutely incredible!",
+                                    description: "The electric SUV is a game changer. BMW has really outdone themselves with this one.",
+                                    url: "https://twitter.com/example/status/bmw1",
+                                    publishedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+                                    platform: "Twitter",
+                                    platformLogo: "https://via.placeholder.com/30x30/1da1f2/ffffff?text=T",
+                                    engagement: { views: 456, shares: 23, comments: 12 }
+                                },
+                                {
+                                    id: "bmw-social2",
+                                    title: "BMW's new autonomous driving tech is mind-blowing",
+                                    description: "Can't wait to see this on the roads. The future of driving is here!",
+                                    url: "https://linkedin.com/posts/bmw-autonomous",
+                                    publishedAt: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
+                                    platform: "LinkedIn",
+                                    platformLogo: "https://via.placeholder.com/30x30/0077b5/ffffff?text=L",
+                                    engagement: { views: 789, shares: 45, comments: 23 }
+                                }
+                            ]
+                        },
+                        timestamp: new Date().toISOString()
+                    }
+                ];
+                
+                // Store in localStorage
+                localStorage.setItem('monitoringData', JSON.stringify(bmwData));
+                localStorage.setItem('testMonitoringData', JSON.stringify(bmwData));
+                
+                log(`✅ BMW data added successfully!
+
+🚗 BMW News Articles Added: ${bmwData[0].newsData.results.length}
+📱 Social Posts Added: ${bmwData[0].socialData.data.length}
+
+📊 Articles Include:
+- BMW Electric Vehicle Technology (Breaking News)
+- BMW Record Sales Q4 2024
+- BMW Safety Recall (Breaking News)
+- BMW Autonomous Driving Partnership
+- BMW iX Car of the Year Award
+- BMW New Asia Manufacturing Plant
+
+🎯 Next Steps:
+1. Click "Go to Dashboard"
+2. Refresh the dashboard page
+3. Check "Recent Activity" section
+4. You should see BMW articles displayed!
+
+💡 The articles have different sentiment scores:
+- Positive: Electric tech, sales, partnership, award, plant
+- Negative: Safety recall
+- All have realistic engagement metrics`, 'success');
+                
+            } catch (error) {
+                log(`❌ Error adding BMW data: ${error.message}`, 'error');
+            }
+        }
+        
+        function goToDashboard() {
+            const dashboardUrl = window.location.origin + '/dashboard';
+            window.open(dashboardUrl, '_blank');
+            
+            log(`🚀 Dashboard opened: ${dashboardUrl}
+
+📋 Instructions:
+1. The dashboard should open in a new tab
+2. Refresh the page (F5 or Ctrl+R)
+3. Look at the "Recent Activity" section
+4. You should see BMW articles with:
+   - Article titles and descriptions
+   - Sentiment indicators (positive/negative)
+   - Engagement metrics (views, shares, comments)
+   - Breaking news indicators
+   - Source information
+
+🔍 If you still don't see data:
+- Check browser console for errors
+- Make sure you're logged in
+- Try refreshing the page again`, 'info');
+        }
+        
+        function checkData() {
+            const data = localStorage.getItem('monitoringData') || localStorage.getItem('testMonitoringData');
+            
+            if (data) {
+                try {
+                    const parsedData = JSON.parse(data);
+                    const bmwData = parsedData.find(item => item.keyword === 'bmw');
+                    
+                    if (bmwData) {
+                        const newsCount = bmwData.newsData?.results?.length || 0;
+                        const socialCount = bmwData.socialData?.data?.length || 0;
+                        
+                        log(`✅ BMW data found in localStorage!
+
+📊 Current BMW Data:
+- News Articles: ${newsCount}
+- Social Posts: ${socialCount}
+- Last Updated: ${bmwData.timestamp ? new Date(bmwData.timestamp).toLocaleString() : 'Unknown'}
+
+📋 Recent Articles:
+${bmwData.newsData?.results?.slice(0, 3).map(article => `- ${article.title}`).join('\n') || 'No articles found'}
+
+🎯 This data should appear in your dashboard's "Recent Activity" section!`, 'success');
+                    } else {
+                        log(`❌ No BMW data found in localStorage.
+
+🔧 Please click "Add BMW News Data" first.`, 'error');
+                    }
+                } catch (error) {
+                    log(`❌ Error reading data: ${error.message}`, 'error');
+                }
+            } else {
+                log(`❌ No monitoring data found in localStorage.
+
+🔧 Please click "Add BMW News Data" first.`, 'error');
+            }
+        }
+        
+        // Auto-check data on page load
+        window.addEventListener('load', () => {
+            setTimeout(checkData, 500);
+        });
+    </script>
+</body>
+</html>
