@@ -78,7 +78,7 @@
         </div>
         
         <input type="text" id="apiUrl" placeholder="Enter your API base URL" value="">
-        <input type="text" id="apiToken" placeholder="Enter your API token" value="ynjXb8sa7fImKelP">
+            <input type="text" id="apiToken" placeholder="Enter your API token" value="GhpwNfDujiw8enkp">
         
         <button onclick="testInstagramAPI()">Test Instagram API</button>
         <button onclick="testYouTubeAPI()">Test YouTube API</button>
@@ -97,7 +97,7 @@
             <strong>To fix API issues:</strong><br>
             1. Create a <code>.env.local</code> file in your project root<br>
             2. Add: <code>NEXT_PUBLIC_ENSEMBLE_API_URL=https://your-actual-api-url.com</code><br>
-            3. Add: <code>NEXT_PUBLIC_ENSEMBLE_TOKEN=ynjXb8sa7fImKelP</code><br>
+            3. Add: <code>ENSEMBLE_TOKEN=GhpwNfDujiw8enkp</code><br>
             4. Restart your Next.js server
         </div>
     </div>
@@ -198,7 +198,7 @@
         }
 
         function testFrontend() {
-            window.open('http://localhost:3000/dashboard/social-listening', '_blank');
+            window.open('http://localhost:3000/dashboard/social-listening-finder', '_blank');
         }
 
         // Auto-test Next.js API on load

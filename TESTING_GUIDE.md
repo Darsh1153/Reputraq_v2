@@ -31,7 +31,7 @@
 ```bash
 # Ensemble Social API Configuration
 NEXT_PUBLIC_ENSEMBLE_API_URL=https://your-actual-base-url.com
-NEXT_PUBLIC_ENSEMBLE_TOKEN=ynjXb8sa7fImKelP
+ENSEMBLE_TOKEN=GhpwNfDujiw8enkp
 ```
 
 ### **Install dependencies (if needed):**
@@ -53,22 +53,22 @@ node test-ensemble-apis.js
 
 #### **Test YouTube Search:**
 ```bash
-curl "https://your-base-url.com/youtube/search?keyword=keyboard&depth=1&start_cursor=&period=overall&sorting=relevance&get_additional_info=false&token=ynjXb8sa7fImKelP"
+curl "https://your-base-url.com/youtube/search?keyword=keyboard&depth=1&start_cursor=&period=overall&sorting=relevance&get_additional_info=false&token=GhpwNfDujiw8enkp"
 ```
 
 #### **Test YouTube Hashtag:**
 ```bash
-curl "https://your-base-url.com/youtube/hashtag/search?name=keyboard&depth=1&only_shorts=false&token=ynjXb8sa7fImKelP"
+curl "https://your-base-url.com/youtube/hashtag/search?name=keyboard&depth=1&only_shorts=false&token=GhpwNfDujiw8enkp"
 ```
 
 #### **Test TikTok Hashtag:**
 ```bash
-curl "https://your-base-url.com/tt/hashtag/posts?name=keyboard&cursor=0&token=ynjXb8sa7fImKelP"
+curl "https://your-base-url.com/tt/hashtag/posts?name=keyboard&cursor=0&token=GhpwNfDujiw8enkp"
 ```
 
 #### **Test Instagram Search:**
 ```bash
-curl "https://your-base-url.com/instagram/search?text=keyboard&token=ynjXb8sa7fImKelP"
+curl "https://your-base-url.com/instagram/search?text=keyboard&token=GhpwNfDujiw8enkp"
 ```
 
 ---
@@ -81,7 +81,7 @@ npm run dev
 ```
 
 ### **Test Social Listening Page:**
-1. **Navigate to:** `http://localhost:3000/dashboard/social-listening`
+1. **Navigate to:** `http://localhost:3000/dashboard/social-listening-finder`
 2. **Test Search:**
    - Enter "keyboard" in search box
    - Click "Search" button
@@ -89,20 +89,12 @@ npm run dev
    - Check browser console for API calls
 
 ### **Test Hashtag Finder:**
-1. **Navigate to:** `http://localhost:3000/dashboard/hashtag-finder`
+1. **Navigate to:** `http://localhost:3000/dashboard/hashtag-finder-api`
 2. **Test Search:**
    - Enter "keyboard" in search box
    - Click "Search" button
    - Verify hashtag suggestions appear
 
-### **Test Social Listening Finder:**
-1. **Navigate to:** `http://localhost:3000/dashboard/social-listening-finder`
-2. **Test Search:**
-   - Enter "keyboard" in search box
-   - Click "Search" button
-   - Verify social content appears
-
----
 
 ## 🔍 **Step 4: Detailed Testing Scenarios**
 
@@ -206,7 +198,7 @@ npm run dev
 ```
 🧪 Testing Ensemble Social APIs...
 Base URL: https://your-base-url.com
-Token: ynjXb8sa7fImKelP
+Token: GhpwNfDujiw8enkp
 Test Keyword: keyboard
 ==================================================
 
@@ -324,7 +316,6 @@ API Tests:
 Frontend Tests:
 - [ ] Social Listening: PASS/FAIL
 - [ ] Hashtag Finder: PASS/FAIL
-- [ ] Social Listening Finder: PASS/FAIL
 
 Data Validation:
 - [ ] YouTube Data: PASS/FAIL

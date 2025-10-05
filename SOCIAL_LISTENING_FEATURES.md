@@ -4,24 +4,6 @@ This document outlines the comprehensive social listening and hashtag finder fea
 
 ## 🚀 Features Overview
 
-### 1. Social Listening Finder
-A Brand24-like social media monitoring tool that provides real-time insights across multiple platforms.
-
-#### Key Capabilities:
-- **Multi-Platform Monitoring**: TikTok, YouTube, Instagram, X (Twitter), Reddit, Threads
-- **Real-time Data Processing**: Live analysis of social media content
-- **Advanced Filtering**: Platform, sentiment, engagement, content type, language filters
-- **Sentiment Analysis**: Automatic positive/negative/neutral classification
-- **Engagement Tracking**: Likes, shares, comments, views, and reach metrics
-- **Interactive Dashboards**: Charts, graphs, and visual analytics
-- **Export Functionality**: CSV, JSON, and PDF export options
-
-#### Data Visualization:
-- **Time Series Charts**: Engagement trends over time
-- **Sentiment Distribution**: Pie charts showing sentiment breakdown
-- **Platform Performance**: Bar charts comparing platform metrics
-- **Hashtag Analytics**: Top performing hashtags with engagement data
-- **Real-time Metrics**: Live updating statistics and KPIs
 
 ### 2. Hashtag Finder
 Advanced hashtag discovery and performance tracking tool.
@@ -162,15 +144,8 @@ Interactive visualization component featuring:
 - **Interactive Filters**: Time range, platform, sentiment filters
 - **Export Integration**: Built-in export functionality
 
-### 2. Social Listening Finder Page (`app/dashboard/social-listening-finder/page.tsx`)
-Main social listening interface with:
-- **Advanced Search**: Keyword, hashtag, and mention search
-- **Filter Panel**: Comprehensive filtering options
-- **Search History**: Recent searches with quick access
-- **Content Grid**: Card-based content display
-- **Real-time Metrics**: Live statistics and KPIs
 
-### 3. Hashtag Finder Page (`app/dashboard/hashtag-finder/page.tsx`)
+### 3. Hashtag Finder API Page (`app/dashboard/hashtag-finder-api/page.tsx`)
 Dedicated hashtag analysis interface featuring:
 - **Hashtag Search**: Find hashtags by keyword or trend
 - **Trending Section**: Real-time trending hashtags
@@ -221,18 +196,6 @@ The system integrates with the InsightIQ API for social media data:
 
 ## 🚀 Usage Examples
 
-### Basic Social Listening Search
-```typescript
-const searchParams = {
-  keyword: 'artificial intelligence',
-  platforms: ['TikTok', 'Instagram', 'X'],
-  timeRange: '7d',
-  sentiment: 'all',
-  engagement: 'high'
-};
-
-const results = await socialListeningAPI.searchSocialContent(searchParams);
-```
 
 ### Hashtag Analysis
 ```typescript

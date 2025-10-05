@@ -54,28 +54,16 @@ const navigationItems = [
     path: "/dashboard/social-listening-finder",
   },
   {
-    id: "hashtag-finder",
-    label: "Hashtag Finder",
+    id: "hashtag-finder-api",
+    label: "Hashtag Finder API",
     icon: Hash,
-    path: "/dashboard/hashtag-finder",
-  },
-  {
-    id: "hashtag-tracker",
-    label: "Hashtag Tracker",
-    icon: Hash,
-    path: "/dashboard/hashtag-tracker",
+    path: "/dashboard/hashtag-finder-api",
   },
   {
     id: "trending-mentions",
     label: "Trending Mentions Finder",
     icon: TrendingUp,
     path: "/dashboard/trending-mentions",
-  },
-  {
-    id: "social-listening",
-    label: "Social Listening Finder",
-    icon: Monitor,
-    path: "/dashboard/social-listening",
   },
   {
     id: "youtube-search",

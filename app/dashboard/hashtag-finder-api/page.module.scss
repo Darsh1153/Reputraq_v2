@@ -745,6 +745,26 @@
   font-weight: 500;
 }
 
+// Mock data notice styles
+.mockDataNotice {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #fef3c7;
+  border: 1px solid #f59e0b;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  color: #92400e;
+  font-size: 0.875rem;
+  
+  .noticeIcon {
+    width: 1rem;
+    height: 1rem;
+    color: #f59e0b;
+  }
+}
+
 // Instagram-specific styles
 .postMedia {
   position: relative;

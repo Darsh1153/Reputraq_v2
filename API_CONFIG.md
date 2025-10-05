@@ -7,7 +7,7 @@ Create a `.env.local` file in the root directory with the following variables:
 ```bash
 # Ensemble Social API Configuration
 NEXT_PUBLIC_ENSEMBLE_API_URL=https://your-actual-api-url.com
-NEXT_PUBLIC_ENSEMBLE_TOKEN=ynjXb8sa7fImKelP
+ENSEMBLE_TOKEN=GhpwNfDujiw8enkp
 ```
 
 ## Current Status
@@ -31,7 +31,7 @@ curl -X POST http://localhost:3000/api/ensemble-search \
   -d '{"keyword":"tiger"}'
 
 # Test individual APIs (replace with your actual URL)
-curl "https://your-actual-api-url.com/instagram/search?text=tiger&token=ynjXb8sa7fImKelP"
+curl "https://your-actual-api-url.com/instagram/search?text=tiger&token=GhpwNfDujiw8enkp"
 ```
 
 ## What's Working

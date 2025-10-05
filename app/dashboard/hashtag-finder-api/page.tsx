@@ -6,8 +6,7 @@ import {
   Filter,
   RefreshCw,
   Youtube,
-  Instagram,
-  Music,
+  Hash,
   Users,
   Calendar,
   Eye,
@@ -16,6 +15,8 @@ import {
   Sparkles,
   Play,
   CheckCircle,
+  Clock,
+  ExternalLink,
   BarChart3,
   TrendingUp as TrendingUpIcon,
   TrendingDown,
@@ -25,30 +26,46 @@ import {
   Zap,
   Activity
 } from 'lucide-react';
-import { useSelector } from 'react-redux';
-import { RootState } from '../../../lib/store';
 import { 
   PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
   Legend, LineChart, Line, AreaChart, Area, ScatterChart, Scatter
 } from 'recharts';
-import ExportButton from '../../../components/ExportButton';
-import { createSocialListeningFinderExportData, createSentimentAnalysisExportData } from '../../../utils/exportUtils';
 import styles from './page.module.scss';
+import ExportButton from '@/components/ExportButton';
+import { createHashtagFinderExportData, createSentimentAnalysisExportData } from '@/utils/exportUtils';
 
-interface SearchResult {
-  platform: string;
-  success: boolean;
-  data?: any;
-  error?: string;
-  keyword: string;
-  note?: string;
+interface Video {
+  video_id: string;
+  title: string;
+  thumbnail: string;
+  channel_name: string;
+  view_count: number;
+  published_time: string;
+  duration: string;
+  url: string;
 }
 
-interface SearchFilters {
-  sorting: 'relevance' | 'date' | 'views';
-  period: '24h' | '7d' | '30d' | 'overall';
-  depth: string;
-  platform: 'youtube' | 'instagram' | 'tiktok';
+interface HashtagData {
+  hashtag_name: string;
+  post_count: number;
+  trending_score: number;
+  videos: Video[];
+}
+
+interface ApiResponse {
+  success: boolean;
+  keyword: string;
+  platform: string;
+  totalResults: number;
+  data: {
+    data: {
+      contents?: any[];
+      posts?: any[];
+    };
+  };
+  timestamp: string;
+  note?: string;
+  error?: string;
 }
 
 interface SentimentInsights {
@@ -92,11 +109,17 @@ interface SentimentAnalysisResponse {
   timestamp: string;
 }
 
-export default function SocialListeningFinderPage() {
-  const { user } = useSelector((state: RootState) => state.user);
+interface SearchFilters {
+  sorting: 'relevance' | 'date' | 'views';
+  period: '24h' | '7d' | '30d' | 'overall';
+  depth: string;
+  onlyShorts: boolean;
+}
+
+export default function HashtagFinderAPIPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
-  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [searchResults, setSearchResults] = useState<ApiResponse[]>([]);
   const [showFilters, setShowFilters] = useState(false);
   const [searchHistory, setSearchHistory] = useState<string[]>([]);
   const [sentimentAnalysis, setSentimentAnalysis] = useState<SentimentAnalysisResponse | null>(null);
@@ -106,16 +129,17 @@ export default function SocialListeningFinderPage() {
     sorting: 'relevance',
     period: 'overall',
     depth: '1',
-    platform: 'youtube'
+    onlyShorts: false
   });
 
-  // Refs for PDF export
+  // Refs for export functionality
   const resultsSectionRef = useRef<HTMLDivElement>(null);
   const sentimentSectionRef = useRef<HTMLDivElement>(null);
+  const fullPageRef = useRef<HTMLDivElement>(null);
 
   // Load search history from localStorage on component mount
   useEffect(() => {
-    const savedHistory = localStorage.getItem('socialSearchHistory');
+    const savedHistory = localStorage.getItem('hashtagSearchHistory');
     if (savedHistory) {
       setSearchHistory(JSON.parse(savedHistory));
     }
@@ -123,7 +147,7 @@ export default function SocialListeningFinderPage() {
 
   // Save search history to localStorage whenever it changes
   useEffect(() => {
-    localStorage.setItem('socialSearchHistory', JSON.stringify(searchHistory));
+    localStorage.setItem('hashtagSearchHistory', JSON.stringify(searchHistory));
   }, [searchHistory]);
 
   const saveToSearchHistory = (query: string) => {
@@ -176,8 +200,18 @@ export default function SocialListeningFinderPage() {
     e?.preventDefault();
     if (!searchQuery.trim()) return;
 
+    console.log('🔍 Frontend: Starting hashtag search for:', searchQuery.trim());
+    
     setIsSearching(true);
     saveToSearchHistory(searchQuery.trim());
+
+    const requestBody = {
+      name: searchQuery.trim(),
+      depth: filters.depth,
+      onlyShorts: filters.onlyShorts.toString(),
+    };
+
+    console.log('📤 Frontend: Sending request body:', requestBody);
 
     try {
       const response = await fetch('/api/ensemble/search', {
@@ -190,18 +224,25 @@ export default function SocialListeningFinderPage() {
           sorting: filters.sorting,
           period: filters.period,
           depth: filters.depth,
-          platform: filters.platform
-        })
+          platform: 'youtube' // Force YouTube for hashtag search
+        }),
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      console.log('📡 Frontend: Response status:', response.status);
+      console.log('📡 Frontend: Response headers:', Object.fromEntries(response.headers.entries()));
 
       const data = await response.json();
+      console.log('📥 Frontend: Response data:', data);
+
+      if (!response.ok) {
+        console.error('❌ Frontend: API Error:', data);
+        throw new Error(data.error || 'Failed to fetch hashtag data');
+      }
+
+      console.log('✅ Frontend: Successfully received data:', data);
       
       if (data.success) {
-        setSearchResults([data]); // Wrap the single result in an array
+        setSearchResults([data]); // Wrap the single result in an array like social-listening-finder
         
         // Trigger sentiment analysis
         await performSentimentAnalysis(searchQuery.trim());
@@ -211,7 +252,7 @@ export default function SocialListeningFinderPage() {
         setShowSentimentInsights(false);
       }
     } catch (error) {
-      console.error('Search error:', error);
+      console.error('❌ Frontend: Error occurred:', error);
       setSearchResults([]);
       setSentimentAnalysis(null);
       setShowSentimentInsights(false);
@@ -220,238 +261,13 @@ export default function SocialListeningFinderPage() {
     }
   };
 
-  const renderInstagramContent = (item: any) => {
-    // Handle Instagram user/hashtag structure from the API
-    if (item.user) {
-      // This is a user result
-      const user = item.user;
-      const username = user.username || 'Unknown User';
-      const fullName = user.full_name || username;
-      const profilePic = user.profile_pic_url || user.profile_picture_url;
-      const isVerified = user.is_verified || false;
-      const userId = user.pk || user.id;
-      const profileUrl = `https://instagram.com/${username}/`;
-      
-      return (
-        <article key={userId || Math.random()} className={styles.instagramCard}>
-          <div className={styles.cardContent}>
-                  <div className={styles.postMedia}>
-                    <div className={styles.profileFallback}>
-                      <span className={styles.fallbackText}>
-                        {username.charAt(0).toUpperCase()}
-                      </span>
-                    </div>
-                  </div>
-            
-            <div className={styles.postInfo}>
-              <div className={styles.userInfo}>
-                <div className={styles.userDetails}>
-                  <h4 className={styles.username}>
-                    @{username}
-                    {isVerified && <span className={styles.verifiedBadge}>✓</span>}
-                  </h4>
-                  <p className={styles.fullName}>{fullName}</p>
-                </div>
-              </div>
-              
-              <div className={styles.postCaption}>
-                <p className={styles.captionText}>
-                  Instagram Profile
-                </p>
-              </div>
-              
-              <a 
-                href={profileUrl} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className={styles.postLink}
-              >
-                View Profile
-              </a>
-            </div>
-          </div>
-        </article>
-      );
-    } else if (item.hashtag) {
-      // This is a hashtag result
-      const hashtag = item.hashtag;
-      const name = hashtag.name || 'Unknown Hashtag';
-      const mediaCount = hashtag.media_count || 0;
-      const hashtagId = hashtag.id;
-      const hashtagUrl = `https://instagram.com/explore/tags/${name}/`;
-      
-      return (
-        <article key={hashtagId || Math.random()} className={styles.instagramCard}>
-          <div className={styles.cardContent}>
-            <div className={styles.postMedia}>
-              <div className={styles.hashtagIcon}>#</div>
-            </div>
-            
-            <div className={styles.postInfo}>
-              <div className={styles.userInfo}>
-                <div className={styles.userDetails}>
-                  <h4 className={styles.username}>#{name}</h4>
-                  <p className={styles.fullName}>Hashtag</p>
-                </div>
-              </div>
-              
-              <div className={styles.postCaption}>
-                <p className={styles.captionText}>
-                  {mediaCount.toLocaleString()} posts
-                </p>
-              </div>
-              
-              <a 
-                href={hashtagUrl} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className={styles.postLink}
-              >
-                View Hashtag
-              </a>
-            </div>
-          </div>
-        </article>
-      );
-    } else {
-      // Fallback for other data structures
-      return (
-        <article key={Math.random()} className={styles.instagramCard}>
-          <div className={styles.cardContent}>
-            <div className={styles.postInfo}>
-              <div className={styles.userInfo}>
-                <div className={styles.userDetails}>
-                  <h4 className={styles.username}>Instagram Result</h4>
-                </div>
-              </div>
-              
-              <div className={styles.postCaption}>
-                <p className={styles.captionText}>
-                  {JSON.stringify(item, null, 2).substring(0, 200)}...
-                </p>
-              </div>
-            </div>
-          </div>
-        </article>
-      );
+  const formatViewCount = (count: number) => {
+    if (count >= 1000000) {
+      return `${(count / 1000000).toFixed(1)}M`;
+    } else if (count >= 1000) {
+      return `${(count / 1000).toFixed(1)}K`;
     }
-  };
-
-  const renderTikTokContent = (item: any) => {
-    // Handle TikTok video structure from the API
-    const video = item.aweme_info || item;
-    const videoId = video.aweme_id || video.id || 'unknown';
-    const description = video.desc || video.description || 'No description available';
-    const author = video.author || {};
-    const authorName = author.nickname || author.unique_id || 'Unknown User';
-    const authorUsername = author.unique_id || author.nickname || 'unknown_user';
-    const authorAvatar = author.avatar_larger?.url_list?.[0] || author.avatar_thumb?.url_list?.[0] || author.avatar_url;
-    const videoUrl = video.share_url || video.web_video_url || video.play_url || video.video?.play_addr?.url_list?.[0];
-    const coverImage = video.video?.cover?.url_list?.[0] || video.video?.origin_cover?.url_list?.[0] || video.cover_url;
-    const stats = video.statistics || {};
-    const likeCount = stats.digg_count || stats.like_count || 0;
-    const commentCount = stats.comment_count || 0;
-    const shareCount = stats.share_count || 0;
-    const playCount = stats.play_count || stats.view_count || 0;
-    const duration = video.video?.duration || 0;
-    
-    return (
-      <article key={videoId} className={styles.tiktokCard}>
-        <div className={styles.cardContent}>
-          <div className={styles.postMedia}>
-            {coverImage ? (
-              <img 
-                src={coverImage} 
-                alt={description.substring(0, 50)}
-                className={styles.mediaImage}
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.style.display = 'none';
-                  const fallback = target.nextElementSibling as HTMLElement;
-                  if (fallback) fallback.style.display = 'flex';
-                }}
-              />
-            ) : null}
-            <div 
-              className={styles.videoFallback}
-              style={{ display: coverImage ? 'none' : 'flex' }}
-            >
-              <Music className={styles.fallbackIcon} />
-            </div>
-            <div className={styles.playOverlay}>
-              <Play className={styles.playIcon} />
-            </div>
-          </div>
-          
-          <div className={styles.postInfo}>
-            <div className={styles.userInfo}>
-              <div className={styles.userAvatar}>
-                {authorAvatar ? (
-                  <img 
-                    src={authorAvatar} 
-                    alt={authorName}
-                    className={styles.avatarImage}
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.style.display = 'none';
-                      const fallback = target.nextElementSibling as HTMLElement;
-                      if (fallback) fallback.style.display = 'flex';
-                    }}
-                  />
-                ) : null}
-                <div 
-                  className={styles.avatarFallback}
-                  style={{ display: authorAvatar ? 'none' : 'flex' }}
-                >
-                  <span className={styles.avatarText}>
-                    {authorName.charAt(0).toUpperCase()}
-                  </span>
-                </div>
-              </div>
-              <div className={styles.userDetails}>
-                <h4 className={styles.username}>@{authorUsername}</h4>
-                <p className={styles.fullName}>{authorName}</p>
-              </div>
-            </div>
-            
-            <div className={styles.postCaption}>
-              <p className={styles.captionText}>
-                {description.length > 150 ? `${description.substring(0, 150)}...` : description}
-              </p>
-            </div>
-            
-            <div className={styles.postStats}>
-              <div className={styles.statItem}>
-                <Eye className={styles.statIcon} />
-                <span className={styles.statValue}>{playCount.toLocaleString()}</span>
-                <span className={styles.statLabel}>views</span>
-              </div>
-              <div className={styles.statItem}>
-                <TrendingUp className={styles.statIcon} />
-                <span className={styles.statValue}>{likeCount.toLocaleString()}</span>
-                <span className={styles.statLabel}>likes</span>
-              </div>
-              <div className={styles.statItem}>
-                <Users className={styles.statIcon} />
-                <span className={styles.statValue}>{commentCount.toLocaleString()}</span>
-                <span className={styles.statLabel}>comments</span>
-              </div>
-            </div>
-            
-            {videoUrl && (
-              <a 
-                href={videoUrl} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className={styles.postLink}
-              >
-                Watch on TikTok
-              </a>
-            )}
-          </div>
-        </div>
-      </article>
-    );
+    return count.toString();
   };
 
   const renderYouTubeContent = (item: any) => {
@@ -542,137 +358,82 @@ export default function SocialListeningFinderPage() {
     );
   };
 
-  const renderContent = (result: SearchResult) => {
-    if (!result.success || !result.data) {
+  const renderContent = () => {
+    if (!searchResults || searchResults.length === 0) {
       return (
         <div className={styles.errorMessage}>
           <AlertCircle className={styles.errorIcon} />
-          Failed to fetch {filters.platform} data: {result.error || 'Unknown error'}
+          Failed to fetch hashtag data: No results found
         </div>
       );
     }
 
-    const data = result.data;
-    let content = [];
-    
-    if (filters.platform === 'youtube') {
-      // Handle YouTube API data structure - the structure is: data.data.posts
-    if (data && data.data && data.data.posts && Array.isArray(data.data.posts)) {
-      content = data.data.posts;
-    } else {
-      console.error('Expected data.data.posts structure not found:', data);
+    const result = searchResults[0]; // Get the first (and only) result
+    if (!result.success) {
       return (
         <div className={styles.errorMessage}>
           <AlertCircle className={styles.errorIcon} />
-          Expected 'posts' array not found in API response.
+          Failed to fetch hashtag data: {result.error || 'Unknown error'}
         </div>
       );
     }
-    
-    if (!Array.isArray(content) || content.length === 0) {
+
+    // Handle YouTube API response structure (same as social-listening-finder)
+    const data = result.data;
+    if (!data || !data.data || (!data.data.contents && !data.data.posts)) {
       return (
         <div className={styles.noResults}>
           <AlertCircle className={styles.noResultsIcon} />
           <h3>No YouTube videos found</h3>
-          <p>Try searching with different keywords.</p>
+          <p>Try searching with different hashtags.</p>
+        </div>
+      );
+    }
+
+    // Handle both 'contents' and 'posts' structures
+    const content = data.data.contents || data.data.posts;
+    
+    if (!content || !Array.isArray(content)) {
+      return (
+        <div className={styles.noResults}>
+          <AlertCircle className={styles.noResultsIcon} />
+          <h3>No YouTube videos found</h3>
+          <p>Try searching with different hashtags.</p>
         </div>
       );
     }
     
     // Filter only videoRenderer items for proper rendering
-    const videoItems = content.filter(item => item.videoRenderer);
+    const videoItems = content.filter((item: any) => item.videoRenderer);
     
+    if (videoItems.length === 0) {
+      return (
+        <div className={styles.noResults}>
+          <AlertCircle className={styles.noResultsIcon} />
+          <h3>No YouTube videos found</h3>
+          <p>Try searching with different hashtags.</p>
+        </div>
+      );
+    }
+
     // Render YouTube content - pass the videoRenderer object directly
     return videoItems.map((item: any) => renderYouTubeContent(item.videoRenderer));
-    } else if (filters.platform === 'instagram') {
-      // Handle Instagram API data structure - extract users and hashtags
-      let users = [];
-      let hashtags = [];
-      
-      if (data && data.data) {
-        if (data.data.users && Array.isArray(data.data.users)) {
-          users = data.data.users.map((user: any) => ({ user: user.user }));
-        }
-        if (data.data.hashtags && Array.isArray(data.data.hashtags)) {
-          hashtags = data.data.hashtags.map((hashtag: any) => ({ hashtag: hashtag.hashtag }));
-        }
-      }
-      
-      content = [...users, ...hashtags];
-      
-      if (!Array.isArray(content) || content.length === 0) {
-        return (
-          <div className={styles.noResults}>
-            <AlertCircle className={styles.noResultsIcon} />
-            <h3>No Instagram results found</h3>
-            <p>Try searching with different keywords.</p>
-          </div>
-        );
-      }
-      
-      // Render Instagram content
-      return content.map((item: any) => renderInstagramContent(item));
-    } else if (filters.platform === 'tiktok') {
-      // Handle TikTok API data structure - extract videos
-      if (data && data.data && data.data.data && Array.isArray(data.data.data)) {
-        content = data.data.data;
-      } else {
-        console.error('Expected data.data.data structure not found:', data);
-        return (
-          <div className={styles.errorMessage}>
-            <AlertCircle className={styles.errorIcon} />
-            Expected 'data' array not found in API response.
-          </div>
-        );
-      }
-      
-      if (!Array.isArray(content) || content.length === 0) {
-        return (
-          <div className={styles.noResults}>
-            <AlertCircle className={styles.noResultsIcon} />
-            <h3>No TikTok videos found</h3>
-            <p>Try searching with different keywords.</p>
-          </div>
-        );
-      }
-      
-      // Render TikTok content
-      return content.map((item: any) => renderTikTokContent(item));
-    }
-    
-    return null;
   };
 
-  const totalResults = searchResults.length > 0 && searchResults[0].success ? 
-    (filters.platform === 'youtube' ? 
-      (searchResults[0].data?.data?.posts ? searchResults[0].data.data.posts.filter((item: any) => item.videoRenderer).length : 0) :
-      filters.platform === 'instagram' ?
-      (() => {
-        const data = searchResults[0].data;
-        if (data && data.data) {
-          const users = data.data.users ? data.data.users.length : 0;
-          const hashtags = data.data.hashtags ? data.data.hashtags.length : 0;
-          return users + hashtags;
-        }
-        return 0;
-      })() :
-      filters.platform === 'tiktok' ?
-      (searchResults[0].data?.data?.data ? searchResults[0].data.data.data.length : 0) :
-      0
-    ) : 0;
-  
-  const hasResults = searchResults.length > 0 && searchResults[0].success;
+  const totalResults = searchResults?.[0]?.totalResults || 0;
+  const hasResults = searchResults && searchResults.length > 0 && searchResults[0]?.success;
+  const isMockData = searchResults?.[0]?.note?.includes('Mock data');
 
   return (
     <div className={styles.container}>
       <div className={styles.header}>
         <div className={styles.titleSection}>
           <h1 className={styles.title}>
-            <Sparkles className={styles.titleIcon} />
-            Social Listening Finder
-          </h1>
+            <Hash className={styles.titleIcon} />
+        Hashtag Finder API
+      </h1>
           <p className={styles.subtitle}>
-            Discover trending content and viral posts across social platforms
+            Search YouTube hashtags and discover trending content
           </p>
         </div>
 
@@ -680,20 +441,18 @@ export default function SocialListeningFinderPage() {
           <div className={styles.platformSelector}>
             <label className={styles.platformLabel}>Platform:</label>
             <select
-              value={filters.platform}
-              onChange={(e) => setFilters(prev => ({ ...prev, platform: e.target.value as any }))}
+              value="youtube"
               className={styles.platformDropdown}
+              disabled
             >
               <option value="youtube">YouTube</option>
-              <option value="instagram">Instagram</option>
-              <option value="tiktok">TikTok</option>
             </select>
           </div>
           <form onSubmit={handleSearch} className={styles.searchInput}>
             <Search className={styles.searchIcon} />
             <input
               type="text"
-              placeholder={`Search for ${filters.platform === 'youtube' ? 'YouTube videos' : filters.platform === 'instagram' ? 'Instagram posts' : 'TikTok videos'} (e.g., 'AI trends', 'cooking tutorials')`}
+              placeholder="Search for hashtags (e.g., 'barbie', 'tech', 'gaming')"
               className={styles.inputField}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -720,31 +479,6 @@ export default function SocialListeningFinderPage() {
           <div className={styles.filtersPanel}>
             <h3>Search Filters</h3>
             <div className={styles.filterGroup}>
-              <label>Sorting:</label>
-              <select
-                value={filters.sorting}
-                onChange={(e) => setFilters(prev => ({ ...prev, sorting: e.target.value as any }))}
-                className={styles.selectDropdown}
-              >
-                <option value="relevance">Relevance</option>
-                <option value="date">Date</option>
-                <option value="views">Views</option>
-              </select>
-            </div>
-            <div className={styles.filterGroup}>
-              <label>Time Period:</label>
-              <select
-                value={filters.period}
-                onChange={(e) => setFilters(prev => ({ ...prev, period: e.target.value as any }))}
-                className={styles.selectDropdown}
-              >
-                <option value="24h">Last 24 Hours</option>
-                <option value="7d">Last 7 Days</option>
-                <option value="30d">Last 30 Days</option>
-                <option value="overall">Overall</option>
-              </select>
-            </div>
-            <div className={styles.filterGroup}>
               <label>Search Depth:</label>
               <select
                 value={filters.depth}
@@ -756,19 +490,26 @@ export default function SocialListeningFinderPage() {
                 <option value="3">Comprehensive (3)</option>
               </select>
             </div>
+            <div className={styles.filterGroup}>
+              <label className={styles.checkboxLabel}>
+                <input
+                  type="checkbox"
+                  checked={filters.onlyShorts}
+                  onChange={(e) => setFilters(prev => ({ ...prev, onlyShorts: e.target.checked }))}
+                />
+                <span className={styles.checkboxText}>
+                  <Youtube className={styles.platformIcon} />
+                  Shorts Only
+                </span>
+              </label>
+            </div>
           </div>
         )}
         
         {hasResults && totalResults > 0 && (
           <div className={styles.searchSuccess}>
             <CheckCircle className={styles.successIcon} />
-            <span>Found {totalResults} {filters.platform === 'youtube' ? 'YouTube videos' : filters.platform === 'instagram' ? 'Instagram posts' : 'TikTok videos'} for "{searchQuery}"</span>
-          </div>
-        )}
-        
-        {hasResults && searchResults[0].note && (
-          <div className={styles.mockDataNotice}>
-            <span>📝 {searchResults[0].note}</span>
+            <span>Found {totalResults} YouTube videos for "#{searchQuery}"</span>
           </div>
         )}
       </div>
@@ -786,82 +527,8 @@ export default function SocialListeningFinderPage() {
         </div>
       )}
 
-      {searchResults.length > 0 && (
-        <div className={styles.resultsHeader}>
-          <div className={styles.resultsInfo}>
-            <h2>{filters.platform === 'youtube' ? 'YouTube Videos' : filters.platform === 'instagram' ? 'Instagram Posts' : 'TikTok Videos'}</h2>
-            <span className={styles.resultsCount}>
-              Found {totalResults} {filters.platform === 'youtube' ? 'videos' : filters.platform === 'instagram' ? 'posts' : 'videos'}
-            </span>
-          </div>
-          <div className={styles.exportSection}>
-            <ExportButton
-              data={createSocialListeningFinderExportData(searchResults, searchQuery, filters.platform)}
-              variant="primary"
-              size="medium"
-              showLabel={true}
-              targetElementRef={resultsSectionRef}
-            />
-          </div>
-        </div>
-      )}
-
-      <div ref={resultsSectionRef} className={styles.resultsContainer}>
-        {searchResults.length > 0 && searchResults[0].success ? (
-          <div className={styles.platformSection}>
-            <div className={styles.platformHeader}>
-              {filters.platform === 'youtube' ? (
-              <Youtube className={styles.platformIcon} style={{ color: '#FF0000' }} />
-              ) : filters.platform === 'instagram' ? (
-                <Instagram className={styles.platformIcon} style={{ color: '#E4405F' }} />
-              ) : (
-                <Music className={styles.platformIcon} style={{ color: '#000000' }} />
-              )}
-              <h3>
-                {filters.platform === 'youtube' ? 'YouTube Videos' : filters.platform === 'instagram' ? 'Instagram Posts' : 'TikTok Videos'}
-                <span className={styles.resultCount}>
-                  ({totalResults} results)
-                </span>
-              </h3>
-            </div>
-            
-            <div className={styles.contentGrid}>
-              {renderContent(searchResults[0])}
-            </div>
-          </div>
-        ) : searchResults.length > 0 && !searchResults[0].success ? (
-          <div className={styles.noResults}>
-            <AlertCircle className={styles.noResultsIcon} />
-            <h3>No {filters.platform === 'youtube' ? 'YouTube videos' : filters.platform === 'instagram' ? 'Instagram posts' : 'TikTok videos'} found</h3>
-            <p>Try searching with different keywords.</p>
-          </div>
-        ) : (
-          !isSearching && (
-            <div className={styles.welcomeSection}>
-              <Sparkles className={styles.welcomeIcon} />
-              <h2>Welcome to Social Listening Finder</h2>
-              <p>Search across social platforms to discover trending content, viral posts, and popular creators.</p>
-              <div className={styles.features}>
-                <div className={styles.feature}>
-                  <Youtube className={styles.featureIcon} />
-                  <h4>YouTube Video Search</h4>
-                  <p>Find trending videos and channels</p>
-                </div>
-                <div className={styles.feature}>
-                  <Instagram className={styles.featureIcon} />
-                  <h4>Instagram Post Search</h4>
-                  <p>Discover viral posts and influencers</p>
-                </div>
-                <div className={styles.feature}>
-                  <TrendingUp className={styles.featureIcon} />
-                  <h4>Trend Analysis</h4>
-                  <p>Track viral content and engagement</p>
-                </div>
-              </div>
-            </div>
-          )
-        )}
-
+      {/* Full Page Content Wrapper for PDF Export */}
+      <div ref={fullPageRef} className={styles.fullPageContent}>
         {/* Sentiment Analysis & Insights Dashboard */}
         {showSentimentInsights && sentimentAnalysis && (
           <div ref={sentimentSectionRef} className={styles.sentimentDashboard}>
@@ -895,7 +562,7 @@ export default function SocialListeningFinderPage() {
                   variant="secondary"
                   size="small"
                   showLabel={true}
-                  targetElementRef={sentimentSectionRef}
+                  targetElementRef={fullPageRef}
                 />
               </div>
             </div>
@@ -1031,8 +698,8 @@ export default function SocialListeningFinderPage() {
                   <div key={platform} className={styles.platformCard}>
                     <div className={styles.platformHeader}>
                       {platform === 'youtube' && <Youtube className={styles.platformIcon} />}
-                      {platform === 'instagram' && <Instagram className={styles.platformIcon} />}
-                      {platform === 'tiktok' && <Music className={styles.platformIcon} />}
+                      {platform === 'instagram' && <Hash className={styles.platformIcon} />}
+                      {platform === 'tiktok' && <Play className={styles.platformIcon} />}
                       <h5>{platform.charAt(0).toUpperCase() + platform.slice(1)}</h5>
                     </div>
                     <div className={styles.platformMetrics}>
@@ -1065,6 +732,78 @@ export default function SocialListeningFinderPage() {
             </div>
           </div>
         )}
+
+        {hasResults && (
+        <div className={styles.resultsHeader}>
+          <div className={styles.resultsInfo}>
+            <h2>YouTube Videos</h2>
+            <span className={styles.resultsCount}>
+              Found {totalResults} videos
+            </span>
+          </div>
+          <div className={styles.exportSection}>
+            <ExportButton
+              data={createHashtagFinderExportData(searchResults, searchQuery)}
+              variant="primary"
+              size="medium"
+              showLabel={true}
+              targetElementRef={fullPageRef}
+            />
+          </div>
+        </div>
+      )}
+
+      <div ref={resultsSectionRef} className={styles.resultsContainer}>
+        {hasResults ? (
+          <div className={styles.platformSection}>
+            <div className={styles.platformHeader}>
+              <Youtube className={styles.platformIcon} style={{ color: '#FF0000' }} />
+              <h3>
+                YouTube Videos
+                <span className={styles.resultCount}>
+                  ({totalResults} results)
+                </span>
+              </h3>
+            </div>
+            
+            {isMockData && (
+              <div className={styles.mockDataNotice}>
+                <AlertCircle className={styles.noticeIcon} />
+                <span>Showing demo data - API limit reached. Contact hello@ensembledata.com for higher limits.</span>
+              </div>
+            )}
+            
+            <div className={styles.contentGrid}>
+              {renderContent()}
+            </div>
+          </div>
+        ) : (
+          !isSearching && (
+            <div className={styles.welcomeSection}>
+              <Sparkles className={styles.welcomeIcon} />
+              <h2>Welcome to Hashtag Finder API</h2>
+              <p>Search YouTube hashtags to discover trending content and viral videos.</p>
+              <div className={styles.features}>
+                <div className={styles.feature}>
+                  <Youtube className={styles.featureIcon} />
+                  <h4>YouTube Hashtag Search</h4>
+                  <p>Find trending videos by hashtag</p>
+                </div>
+                <div className={styles.feature}>
+                  <Hash className={styles.featureIcon} />
+                  <h4>Hashtag Analysis</h4>
+                  <p>Discover popular hashtags and content</p>
+                </div>
+                <div className={styles.feature}>
+                  <TrendingUp className={styles.featureIcon} />
+                  <h4>Trend Discovery</h4>
+                  <p>Track viral content and engagement</p>
+                </div>
+              </div>
+            </div>
+          )
+        )}
+      </div>
       </div>
 
       {isSearching && (
@@ -1072,7 +811,7 @@ export default function SocialListeningFinderPage() {
           <div className={styles.loadingSpinner}>
             <RefreshCw className={styles.spinner} />
           </div>
-          <p>Searching {filters.platform === 'youtube' ? 'YouTube for videos' : filters.platform === 'instagram' ? 'Instagram for posts' : 'TikTok for videos'}...</p>
+          <p>Searching YouTube for hashtag content...</p>
         </div>
       )}
     </div>

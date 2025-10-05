@@ -10,18 +10,6 @@ export default function TestFeaturesPage() {
 
   const tests = [
     {
-      id: 'social-listening-finder',
-      name: 'Social Listening Finder Page',
-      description: 'Test if the social listening finder page loads correctly',
-      url: '/dashboard/social-listening-finder'
-    },
-    {
-      id: 'hashtag-finder',
-      name: 'Hashtag Finder Page',
-      description: 'Test if the hashtag finder page loads correctly',
-      url: '/dashboard/hashtag-finder'
-    },
-    {
       id: 'data-processors',
       name: 'Data Processors Service',
       description: 'Test if data processors can handle mock data',
@@ -218,22 +206,8 @@ export default function TestFeaturesPage() {
           <div className={styles.step}>
             <div className={styles.stepNumber}>1</div>
             <div className={styles.stepContent}>
-              <h4>Navigate to Social Listening Finder</h4>
-              <p>Click on "Social Listening Finder" in the sidebar or go to <code>/dashboard/social-listening-finder</code></p>
-              <ul>
-                <li>Try searching for keywords like "artificial intelligence" or "tech"</li>
-                <li>Test the filters (platform, sentiment, engagement)</li>
-                <li>Check if the charts and visualizations load</li>
-                <li>Try the export functionality</li>
-              </ul>
-            </div>
-          </div>
-          
-          <div className={styles.step}>
-            <div className={styles.stepNumber}>2</div>
-            <div className={styles.stepContent}>
-              <h4>Navigate to Hashtag Finder</h4>
-              <p>Click on "Hashtag Finder" in the sidebar or go to <code>/dashboard/hashtag-finder</code></p>
+              <h4>Navigate to Hashtag Finder API</h4>
+              <p>Click on "Hashtag Finder API" in the sidebar or go to <code>/dashboard/hashtag-finder-api</code></p>
               <ul>
                 <li>Search for hashtags like "#AI" or "#tech"</li>
                 <li>Check the trending hashtags section</li>
@@ -244,7 +218,7 @@ export default function TestFeaturesPage() {
           </div>
           
           <div className={styles.step}>
-            <div className={styles.stepNumber}>3</div>
+            <div className={styles.stepNumber}>2</div>
             <div className={styles.stepContent}>
               <h4>Test Data Integration</h4>
               <p>Verify that the features work with your existing data:</p>

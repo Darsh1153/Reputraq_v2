@@ -1,0 +1,11 @@
+# Ensemble Social API Configuration
+# Copy this file to .env.local and update with your actual values
+
+# API Base URL (replace with your actual API URL)
+NEXT_PUBLIC_ENSEMBLE_API_URL=https://your-actual-api-url.com
+
+# API Token (this is the correct variable name for API routes)
+ENSEMBLE_TOKEN=GhpwNfDujiw8enkp
+
+# Note: The API routes use ENSEMBLE_TOKEN (without NEXT_PUBLIC_ prefix)
+# This is because API routes run on the server side and don't need the NEXT_PUBLIC_ prefix

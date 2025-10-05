@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hashtag Finder API Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        input { padding: 8px; margin: 5px; border: 1px solid #ddd; border-radius: 3px; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Hashtag Finder API Test</h1>
+    
+    <div class="test-section info">
+        <h3>API Test</h3>
+        <input type="text" id="searchQuery" placeholder="Enter hashtag (e.g., amazon)" value="amazon">
+        <button onclick="testAPI()">Test API</button>
+        <div id="apiResult"></div>
+    </div>
+
+    <div class="test-section info">
+        <h3>Frontend Integration Test</h3>
+        <button onclick="testFrontendIntegration()">Test Frontend Integration</button>
+        <div id="frontendResult"></div>
+    </div>
+
+    <script>
+        async function testAPI() {
+            const query = document.getElementById('searchQuery').value;
+            const resultDiv = document.getElementById('apiResult');
+            
+            resultDiv.innerHTML = '<p>Testing API...</p>';
+            
+            try {
+                const response = await fetch('/api/hashtag-finder', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        name: query,
+                        depth: '1',
+                        onlyShorts: 'false'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ API Test Successful</h4>
+                            <p><strong>Hashtag:</strong> ${data.hashtag}</p>
+                            <p><strong>Total Results:</strong> ${data.totalResults}</p>
+                            <p><strong>Platform:</strong> ${data.platform}</p>
+                            <p><strong>Note:</strong> ${data.note || 'No note'}</p>
+                            <details>
+                                <summary>Full Response</summary>
+                                <pre>${JSON.stringify(data, null, 2)}</pre>
+                            </details>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h4>❌ API Test Failed</h4>
+                            <p><strong>Error:</strong> ${data.error}</p>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ API Test Error</h4>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        async function testFrontendIntegration() {
+            const resultDiv = document.getElementById('frontendResult');
+            
+            resultDiv.innerHTML = '<p>Testing frontend integration...</p>';
+            
+            try {
+                // Test if the page loads
+                const pageResponse = await fetch('/dashboard/hashtag-finder-api');
+                
+                if (pageResponse.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="success">
+                            <h4>✅ Frontend Integration Test Successful</h4>
+                            <p>The hashtag-finder-api page is accessible and loading correctly.</p>
+                            <p><a href="/dashboard/hashtag-finder-api" target="_blank">Open Hashtag Finder API Page</a></p>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error">
+                            <h4>❌ Frontend Integration Test Failed</h4>
+                            <p>Page returned status: ${pageResponse.status}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h4>❌ Frontend Integration Test Error</h4>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Auto-test on page load
+        window.onload = function() {
+            testAPI();
+        };
+    </script>
+</body>
+</html>

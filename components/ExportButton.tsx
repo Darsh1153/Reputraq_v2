@@ -32,34 +32,50 @@ export default function ExportButton({
   const [isExporting, setIsExporting] = useState(false);
 
   const handleExport = async (format: ExportFormat) => {
+    console.log('🚀 ExportButton: Starting export with format:', format, 'data:', data);
     setIsExporting(true);
     setIsOpen(false);
     
     try {
       switch (format) {
         case 'pdf':
+          console.log('📄 Exporting to PDF...');
           // Wait for dropdown to close and UI to stabilize
           await new Promise(resolve => setTimeout(resolve, 200));
           
-          // Ensure the target element is available and stable
-          if (!targetElementRef?.current) {
-            throw new Error('Target element not found for PDF export');
+          // Try to use target element if available, otherwise fallback to data-only PDF
+          if (targetElementRef?.current) {
+            console.log('🎯 Using target element for PDF export');
+            await exportService.exportToPDF(data, targetElementRef.current);
+          } else {
+            console.log('📊 Using data-only PDF export');
+            await exportService.exportToPDF(data);
           }
-          
-          await exportService.exportToPDF(data, targetElementRef.current);
+          console.log('✅ PDF export completed');
           break;
         case 'csv':
-          await exportService.exportToCSV(data);
+          console.log('📊 Exporting to CSV...');
+          const csvBlob = await exportService.exportToCSV(data, { 
+            format: 'csv', 
+            includeMetadata: true 
+          });
+          const csvFilename = exportService.generateFilename(data, { format: 'csv' });
+          console.log('💾 Downloading CSV file:', csvFilename);
+          exportService.downloadFile(csvBlob, csvFilename);
+          console.log('✅ CSV export completed');
           break;
         case 'xls':
+          console.log('📈 Exporting to XLS...');
           await exportService.exportToXLS(data);
+          console.log('✅ XLS export completed');
           break;
         default:
           throw new Error(`Unsupported format: ${format}`);
       }
     } catch (error) {
-      console.error('Export failed:', error);
-      alert('Export failed. Please try again.');
+      console.error('❌ Export failed:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      alert(`Export failed: ${errorMessage}. Please try again.`);
     } finally {
       setIsExporting(false);
     }
@@ -119,7 +135,13 @@ export default function ExportButton({
             {data.metadata && (
               <div className={styles.exportInfo}>
                 <p>Total Records: {data.metadata.totalRecords}</p>
-                <p>Generated: {new Date(data.metadata.generatedAt).toLocaleString()}</p>
+                <p>Generated: {new Date(data.metadata.generatedAt || data.metadata.exportDate || Date.now()).toLocaleString()}</p>
+                {data.metadata.searchQuery && (
+                  <p>Search Query: "{data.metadata.searchQuery}"</p>
+                )}
+                {data.metadata.platform && (
+                  <p>Platform: {data.metadata.platform}</p>
+                )}
               </div>
             )}
           </div>
