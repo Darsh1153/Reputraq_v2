@@ -103,3 +103,4 @@ The application includes a `users` table with the following structure:
 # social_listening
 # social_listening_v1
 # social_listening_v1
+# Reputraq_v2
