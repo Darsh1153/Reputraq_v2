@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-const ENSEMBLE_BASE_URL = process.env.NEXT_PUBLIC_ENSEMBLE_BASE_URL;
-const ENSEMBLE_TOKEN = process.env.ENSEMBLE_TOKEN;
+import { apiKeyManager } from '../../../lib/api-fallback';
 
 // Enhanced sentiment analysis with comprehensive word dictionaries
 class SentimentAnalyzer {
@@ -289,58 +287,57 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Keyword is required' }, { status: 400 });
     }
 
-    if (!ENSEMBLE_BASE_URL || !ENSEMBLE_TOKEN) {
-      return NextResponse.json({ error: 'API configuration missing' }, { status: 500 });
-    }
-
     const analyzer = new SentimentAnalyzer();
     const allSentimentResults: any[] = [];
     const platformResults: { [key: string]: any } = {};
+    const usedApiKeys: string[] = [];
 
     // Fetch data from each platform
     for (const platform of platforms) {
       try {
-        let apiUrl: string;
+        let endpoint: string;
         if (platform === 'instagram') {
-          apiUrl = `${ENSEMBLE_BASE_URL}/instagram/search?text=${encodeURIComponent(keyword)}&token=${ENSEMBLE_TOKEN}`;
+          endpoint = `/instagram/search?text=${encodeURIComponent(keyword)}`;
         } else if (platform === 'tiktok') {
-          apiUrl = `${ENSEMBLE_BASE_URL}/tt/keyword/search?name=${encodeURIComponent(keyword)}&cursor=0&period=7d&sorting=popular&country=US&match_exactly=false&get_author_stats=true&token=${ENSEMBLE_TOKEN}`;
+          endpoint = `/tt/keyword/search?name=${encodeURIComponent(keyword)}&cursor=0&period=7d&sorting=popular&country=US&match_exactly=false&get_author_stats=true`;
         } else {
-          apiUrl = `${ENSEMBLE_BASE_URL}/youtube/search?keyword=${encodeURIComponent(keyword)}&depth=1&start_cursor=&period=overall&sorting=relevance&get_additional_info=false&token=${ENSEMBLE_TOKEN}`;
+          endpoint = `/youtube/search?keyword=${encodeURIComponent(keyword)}&depth=1&start_cursor=&period=overall&sorting=relevance&get_additional_info=false`;
         }
 
-        console.log(`Fetching ${platform} data for sentiment analysis:`, apiUrl);
-
-        const response = await fetch(apiUrl, {
-          method: 'GET',
-          headers: { 'Accept': 'application/json' },
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          const textContent = extractTextContent(platform, data);
-          
-          const platformSentimentResults = textContent.map(text => ({
-            ...analyzer.analyzeSentiment(text),
-            platform,
-            originalText: text
-          }));
-
-          platformResults[platform] = {
-            data,
-            sentimentResults: platformSentimentResults,
-            contentCount: textContent.length
-          };
-
-          allSentimentResults.push(...platformSentimentResults);
-        } else {
-          console.error(`${platform} API Error:`, response.status);
-          platformResults[platform] = {
-            error: `Failed to fetch ${platform} data`,
+        console.log(`🔍 Fetching ${platform} data for sentiment analysis: ${keyword}`);
+        
+        // Use the API key fallback system
+        const result = await apiKeyManager.makeRequest(endpoint);
+        
+        if (!result.success) {
+          console.error(`❌ Failed to fetch ${platform} data:`, result.error);
+          platformResults[platform] = { 
+            error: result.error, 
+            data: [], 
             sentimentResults: [],
             contentCount: 0
           };
+          continue;
         }
+
+        const data = result.data;
+        usedApiKeys.push(result.usedApiKey || 'Unknown');
+        
+        const textContent = extractTextContent(platform, data);
+        
+        const platformSentimentResults = textContent.map(text => ({
+          ...analyzer.analyzeSentiment(text),
+          platform,
+          originalText: text
+        }));
+
+        platformResults[platform] = {
+          data,
+          sentimentResults: platformSentimentResults,
+          contentCount: textContent.length
+        };
+
+        allSentimentResults.push(...platformSentimentResults);
       } catch (error) {
         console.error(`Error fetching ${platform} data:`, error);
         platformResults[platform] = {
@@ -360,6 +357,7 @@ export async function POST(request: NextRequest) {
       platforms,
       insights,
       platformResults,
+      usedApiKeys: [...new Set(usedApiKeys)], // Remove duplicates
       timestamp: new Date().toISOString()
     });
 

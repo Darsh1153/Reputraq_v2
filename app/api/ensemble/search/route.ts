@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-const ENSEMBLE_BASE_URL = process.env.NEXT_PUBLIC_ENSEMBLE_BASE_URL;
-const ENSEMBLE_TOKEN = process.env.ENSEMBLE_TOKEN;
+import { apiKeyManager } from '../../../../lib/api-fallback';
 
 // Mock data function for when API limit is reached
 function getMockData(platform: string, keyword: string) {
@@ -198,61 +196,38 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!ENSEMBLE_BASE_URL || !ENSEMBLE_TOKEN) {
-      return NextResponse.json(
-        { error: 'API configuration missing' },
-        { status: 500 }
-      );
-    }
-
     // Determine API endpoint based on platform
-    let apiUrl: string;
+    let endpoint: string;
     if (platform === 'instagram') {
-      apiUrl = `${ENSEMBLE_BASE_URL}/instagram/search?text=${encodeURIComponent(keyword)}&token=${ENSEMBLE_TOKEN}`;
+      endpoint = `/instagram/search?text=${encodeURIComponent(keyword)}`;
     } else if (platform === 'tiktok') {
-      apiUrl = `${ENSEMBLE_BASE_URL}/tt/keyword/search?name=${encodeURIComponent(keyword)}&cursor=${cursor}&period=${tiktokPeriod}&sorting=${tiktokSorting}&country=${country}&match_exactly=${match_exactly}&get_author_stats=${get_author_stats}&token=${ENSEMBLE_TOKEN}`;
+      endpoint = `/tt/keyword/search?name=${encodeURIComponent(keyword)}&cursor=${cursor}&period=${tiktokPeriod}&sorting=${tiktokSorting}&country=${country}&match_exactly=${match_exactly}&get_author_stats=${get_author_stats}`;
     } else {
-      apiUrl = `${ENSEMBLE_BASE_URL}/youtube/search?keyword=${encodeURIComponent(keyword)}&depth=${depth}&start_cursor=&period=${period}&sorting=${sorting}&get_additional_info=false&token=${ENSEMBLE_TOKEN}`;
+      endpoint = `/youtube/search?keyword=${encodeURIComponent(keyword)}&depth=${depth}&start_cursor=&period=${period}&sorting=${sorting}&get_additional_info=false`;
     }
     
-    console.log(`Fetching ${platform} data from:`, apiUrl);
+    console.log(`🔍 Searching ${platform} for: ${keyword}`);
     
-    const response = await fetch(apiUrl, {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`${platform} API Error:`, errorText);
+    // Use the API key fallback system
+    const result = await apiKeyManager.makeRequest(endpoint);
+    
+    if (!result.success) {
+      console.error(`❌ All API keys failed for ${platform} search:`, result.error);
       
-      // If API limit reached (495), return mock data for demonstration
-      if (response.status === 495) {
-        console.log(`API limit reached for ${platform}, returning mock data`);
-        return NextResponse.json({
-          success: true,
-          keyword,
-          platform,
-          totalResults: platform === 'youtube' ? 5 : platform === 'instagram' ? 8 : 6,
-          data: getMockData(platform, keyword),
-          timestamp: new Date().toISOString(),
-          note: 'Mock data - API limit reached'
-        });
-      }
-      
-      return NextResponse.json(
-        { 
-          error: `Failed to fetch ${platform} data`,
-          status: response.status,
-          details: errorText
-        },
-        { status: response.status }
-      );
+      // Return mock data when all API keys fail
+      const mockData = getMockData(platform, keyword);
+      return NextResponse.json({
+        success: true,
+        keyword,
+        platform,
+        totalResults: platform === 'youtube' ? 5 : platform === 'instagram' ? 8 : 6,
+        data: mockData,
+        timestamp: new Date().toISOString(),
+        note: `Mock data - All API keys failed. Used API key: ${result.usedApiKey || 'None'}`
+      });
     }
 
-    const data = await response.json();
+    const data = result.data;
     
     // Calculate total results based on platform
     let totalResults = 0;
@@ -278,7 +253,8 @@ export async function POST(request: NextRequest) {
       platform,
       totalResults,
       data: data,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      usedApiKey: result.usedApiKey
     });
 
   } catch (error) {

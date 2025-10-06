@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-
-const ENSEMBLE_BASE_URL = process.env.NEXT_PUBLIC_ENSEMBLE_BASE_URL;
-const ENSEMBLE_TOKEN = process.env.ENSEMBLE_TOKEN;
+import { apiKeyManager } from '../../../lib/api-fallback';
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,82 +13,58 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!ENSEMBLE_BASE_URL || !ENSEMBLE_TOKEN) {
-      return NextResponse.json(
-        { error: 'API configuration missing' },
-        { status: 500 }
-      );
-    }
-
-    // Construct the YouTube hashtag search URL
-    const apiUrl = `${ENSEMBLE_BASE_URL}/youtube/hashtag/search?name=${encodeURIComponent(name)}&depth=${depth}&only_shorts=${onlyShorts}&token=${ENSEMBLE_TOKEN}`;
+    // Construct the YouTube hashtag search endpoint
+    const endpoint = `/youtube/hashtag/search?name=${encodeURIComponent(name)}&depth=${depth}&only_shorts=${onlyShorts}`;
     
-    console.log(`Fetching YouTube hashtag data from:`, apiUrl);
+    console.log(`🔍 Searching YouTube hashtag: ${name}`);
     
-    const response = await fetch(apiUrl, {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-      },
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('YouTube Hashtag API Error:', errorText);
+    // Use the API key fallback system
+    const result = await apiKeyManager.makeRequest(endpoint);
+    
+    if (!result.success) {
+      console.error('❌ All API keys failed for YouTube hashtag search:', result.error);
       
-      // If API limit reached (495), return mock data for demonstration
-      if (response.status === 495) {
-        console.log('API limit reached for YouTube hashtag, returning mock data');
-        return NextResponse.json({
-          success: true,
-          hashtag: name,
-          platform: 'youtube',
-          totalResults: 5,
-          data: {
-            hashtags: [{
-              hashtag_name: name,
-              post_count: 150,
-              trending_score: 85,
-              videos: [
-                {
-                  video_id: 'mock1',
-                  title: `${name} - Amazing Video 1`,
-                  thumbnail: 'https://via.placeholder.com/320x180?text=YouTube+Video+1',
-                  channel_name: 'Channel Name',
-                  view_count: 1200000,
-                  published_time: '2 days ago',
-                  duration: '4:32',
-                  url: 'https://youtube.com/watch?v=mock1'
-                },
-                {
-                  video_id: 'mock2',
-                  title: `${name} - Tutorial Video`,
-                  thumbnail: 'https://via.placeholder.com/320x180?text=YouTube+Video+2',
-                  channel_name: 'Tutorial Channel',
-                  view_count: 850000,
-                  published_time: '1 week ago',
-                  duration: '8:15',
-                  url: 'https://youtube.com/watch?v=mock2'
-                }
-              ]
-            }]
-          },
-          timestamp: new Date().toISOString(),
-          note: 'Mock data - API limit reached'
-        });
-      }
-      
-      return NextResponse.json(
-        { 
-          error: 'Failed to fetch YouTube hashtag data',
-          status: response.status,
-          details: errorText
+      // Return mock data when all API keys fail
+      return NextResponse.json({
+        success: true,
+        hashtag: name,
+        platform: 'youtube',
+        totalResults: 5,
+        data: {
+          hashtags: [{
+            hashtag_name: name,
+            post_count: 150,
+            trending_score: 85,
+            videos: [
+              {
+                video_id: 'mock1',
+                title: `${name} - Amazing Video 1`,
+                thumbnail: 'https://via.placeholder.com/320x180?text=YouTube+Video+1',
+                channel_name: 'Channel Name',
+                view_count: 1200000,
+                published_time: '2 days ago',
+                duration: '4:32',
+                url: 'https://youtube.com/watch?v=mock1'
+              },
+              {
+                video_id: 'mock2',
+                title: `${name} - Tutorial Video`,
+                thumbnail: 'https://via.placeholder.com/320x180?text=YouTube+Video+2',
+                channel_name: 'Tutorial Channel',
+                view_count: 850000,
+                published_time: '1 week ago',
+                duration: '8:15',
+                url: 'https://youtube.com/watch?v=mock2'
+              }
+            ]
+          }]
         },
-        { status: response.status }
-      );
+        timestamp: new Date().toISOString(),
+        note: `Mock data - All API keys failed. Used API key: ${result.usedApiKey || 'None'}`
+      });
     }
 
-    const data = await response.json();
+    const data = result.data;
     
     // Calculate total results
     let totalResults = 0;
@@ -106,7 +80,8 @@ export async function POST(request: NextRequest) {
       platform: 'youtube',
       totalResults,
       data: data,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      usedApiKey: result.usedApiKey
     });
 
   } catch (error) {

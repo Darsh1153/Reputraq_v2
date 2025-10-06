@@ -8,7 +8,6 @@ import {
   Building2,
   Bot,
   Search,
-  Lightbulb,
   TrendingUp,
   User,
   ChevronLeft,
@@ -17,7 +16,6 @@ import {
   MoreVertical,
   Monitor,
   Hash,
-  Play,
 } from "lucide-react";
 import FixedRefreshButton from "../../components/FixedRefreshButton";
 import styles from "./layout.module.scss";
@@ -54,10 +52,10 @@ const navigationItems = [
     path: "/dashboard/social-listening-finder",
   },
   {
-    id: "hashtag-finder-api",
-    label: "Hashtag Finder API",
+    id: "hashtag-finder",
+    label: "Hashtag Finder",
     icon: Hash,
-    path: "/dashboard/hashtag-finder-api",
+    path: "/dashboard/hashtag-finder",
   },
   {
     id: "trending-mentions",
@@ -66,34 +64,22 @@ const navigationItems = [
     path: "/dashboard/trending-mentions",
   },
   {
-    id: "youtube-search",
-    label: "YouTube Search",
-    icon: Play,
-    path: "/dashboard/youtube-search",
-  },
-  {
     id: "ai-orm-chatbot",
     label: "AI ORM Chatbot",
     icon: Bot,
     path: "/dashboard/ai-orm-chatbot",
   },
   {
-    id: "insights",
-    label: "Insights APITube",
-    icon: Lightbulb,
-    path: "/dashboard/insights",
-  },
-  {
-    id: "test-features",
-    label: "Test Features",
-    icon: Settings,
-    path: "/dashboard/test-features",
-  },
-  {
     id: "profile",
     label: "Profile Settings",
     icon: User,
     path: "/dashboard/profile",
+  },
+  {
+    id: "settings",
+    label: "Settings",
+    icon: Settings,
+    path: "/dashboard/settings",
   },
 ];
 
@@ -179,19 +165,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         </nav>
 
         <div className={styles.sidebarFooter}>
-          <div className={styles.settingsSection}>
-            <button
-              className={`${styles.settingsButton} ${activePath === "/dashboard/settings" ? styles.active : ""}`}
-            >
-              <span className={styles.menuIcon}>
-                <Settings size={16} />
-              </span>
-              {sidebarOpen && (
-                <span className={styles.menuLabel}>Settings</span>
-              )}
-            </button>
-          </div>
-
           <div className={styles.userProfile}>
             <div className={styles.userAvatar}>
               <div className={styles.avatarPlaceholder}>

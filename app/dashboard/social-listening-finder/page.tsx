@@ -985,9 +985,9 @@ export default function SocialListeningFinderPage() {
                   <ResponsiveContainer width="100%" height={300}>
                     <BarChart data={Object.entries(sentimentAnalysis.platformResults).map(([platform, result]) => ({
                       platform: platform.charAt(0).toUpperCase() + platform.slice(1),
-                      positive: result.sentimentResults.filter(r => r.category === 'positive').length,
-                      negative: result.sentimentResults.filter(r => r.category === 'negative').length,
-                      neutral: result.sentimentResults.filter(r => r.category === 'neutral').length
+                      positive: (result.sentimentResults || []).filter(r => r.category === 'positive').length,
+                      negative: (result.sentimentResults || []).filter(r => r.category === 'negative').length,
+                      neutral: (result.sentimentResults || []).filter(r => r.category === 'neutral').length
                     }))}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="platform" />
@@ -1043,19 +1043,19 @@ export default function SocialListeningFinderPage() {
                       <div className={styles.platformMetric}>
                         <span className={styles.metricLabel}>Positive:</span>
                         <span className={styles.positiveValue}>
-                          {result.sentimentResults.filter(r => r.category === 'positive').length}
+                          {(result.sentimentResults || []).filter(r => r.category === 'positive').length}
                         </span>
                       </div>
                       <div className={styles.platformMetric}>
                         <span className={styles.metricLabel}>Negative:</span>
                         <span className={styles.negativeValue}>
-                          {result.sentimentResults.filter(r => r.category === 'negative').length}
+                          {(result.sentimentResults || []).filter(r => r.category === 'negative').length}
                         </span>
                       </div>
                       <div className={styles.platformMetric}>
                         <span className={styles.metricLabel}>Neutral:</span>
                         <span className={styles.neutralValue}>
-                          {result.sentimentResults.filter(r => r.category === 'neutral').length}
+                          {(result.sentimentResults || []).filter(r => r.category === 'neutral').length}
                         </span>
                       </div>
                     </div>

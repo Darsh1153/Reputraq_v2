@@ -26,8 +26,8 @@ import {
   Zap,
   Activity
 } from 'lucide-react';
-import { 
-  PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
+import {
+  PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   Legend, LineChart, Line, AreaChart, Area, ScatterChart, Scatter
 } from 'recharts';
 import styles from './page.module.scss';
@@ -178,7 +178,7 @@ export default function HashtagFinderAPIPage() {
       }
 
       const data = await response.json();
-      
+
       if (data.success) {
         setSentimentAnalysis(data);
         setShowSentimentInsights(true);
@@ -201,7 +201,7 @@ export default function HashtagFinderAPIPage() {
     if (!searchQuery.trim()) return;
 
     console.log('🔍 Frontend: Starting hashtag search for:', searchQuery.trim());
-    
+
     setIsSearching(true);
     saveToSearchHistory(searchQuery.trim());
 
@@ -240,10 +240,10 @@ export default function HashtagFinderAPIPage() {
       }
 
       console.log('✅ Frontend: Successfully received data:', data);
-      
+
       if (data.success) {
         setSearchResults([data]); // Wrap the single result in an array like social-listening-finder
-        
+
         // Trigger sentiment analysis
         await performSentimentAnalysis(searchQuery.trim());
       } else {
@@ -283,21 +283,21 @@ export default function HashtagFinderAPIPage() {
     const videoId = videoInfo.videoId;
     const title = videoInfo.title?.runs?.[0]?.text || 'YouTube Video';
     const channelName = videoInfo.longBylineText?.runs?.[0]?.text ||
-                       videoInfo.shortBylineText?.runs?.[0]?.text ||
-                       'Unknown Channel';
+      videoInfo.shortBylineText?.runs?.[0]?.text ||
+      'Unknown Channel';
     const thumbnail = videoInfo.thumbnail?.thumbnails?.[0]?.url;
     const channelAvatar = videoInfo.channelThumbnailSupportedRenderers?.channelThumbnailWithLinkRenderer?.thumbnail?.thumbnails?.[0]?.url;
     const publishedTime = videoInfo.publishedTimeText?.simpleText;
     const viewCount = videoInfo.viewCountText?.simpleText || videoInfo.shortViewCountText?.simpleText;
     const duration = videoInfo.lengthText?.simpleText;
-    
+
     return (
       <article key={videoId || Math.random()} className={styles.youtubeCard}>
         <div className={styles.cardContent}>
           <div className={styles.videoThumbnail}>
             {thumbnail && (
-              <img 
-                src={thumbnail} 
+              <img
+                src={thumbnail}
                 alt={title}
                 className={styles.thumbnailImage}
               />
@@ -311,12 +311,12 @@ export default function HashtagFinderAPIPage() {
               </div>
             )}
           </div>
-          
+
           <div className={styles.videoInfo}>
             <div className={styles.channelInfo}>
               {channelAvatar && (
-                <img 
-                  src={channelAvatar} 
+                <img
+                  src={channelAvatar}
                   alt={channelName}
                   className={styles.channelAvatar}
                 />
@@ -330,18 +330,18 @@ export default function HashtagFinderAPIPage() {
                 </div>
               </div>
             </div>
-            
+
             <h3 className={styles.videoTitle}>
-              <a 
-                href={`https://youtube.com/watch?v=${videoId}`} 
-                target="_blank" 
+              <a
+                href={`https://youtube.com/watch?v=${videoId}`}
+                target="_blank"
                 rel="noopener noreferrer"
                 className={styles.videoLink}
               >
                 {title}
               </a>
             </h3>
-            
+
             {/* Video badges if available */}
             {videoInfo.badges && videoInfo.badges.length > 0 && (
               <div className={styles.videoBadges}>
@@ -392,7 +392,7 @@ export default function HashtagFinderAPIPage() {
 
     // Handle both 'contents' and 'posts' structures
     const content = data.data.contents || data.data.posts;
-    
+
     if (!content || !Array.isArray(content)) {
       return (
         <div className={styles.noResults}>
@@ -402,10 +402,10 @@ export default function HashtagFinderAPIPage() {
         </div>
       );
     }
-    
+
     // Filter only videoRenderer items for proper rendering
     const videoItems = content.filter((item: any) => item.videoRenderer);
-    
+
     if (videoItems.length === 0) {
       return (
         <div className={styles.noResults}>
@@ -430,8 +430,8 @@ export default function HashtagFinderAPIPage() {
         <div className={styles.titleSection}>
           <h1 className={styles.title}>
             <Hash className={styles.titleIcon} />
-        Hashtag Finder API
-      </h1>
+            Hashtag Finder
+          </h1>
           <p className={styles.subtitle}>
             Search YouTube hashtags and discover trending content
           </p>
@@ -465,8 +465,8 @@ export default function HashtagFinderAPIPage() {
             <Filter className={styles.filterIcon} />
             Filters
           </button>
-          <button 
-            className={styles.sentimentButton} 
+          <button
+            className={styles.sentimentButton}
             onClick={() => performSentimentAnalysis(searchQuery)}
             disabled={!searchQuery.trim() || isAnalyzingSentiment}
           >
@@ -505,7 +505,7 @@ export default function HashtagFinderAPIPage() {
             </div>
           </div>
         )}
-        
+
         {hasResults && totalResults > 0 && (
           <div className={styles.searchSuccess}>
             <CheckCircle className={styles.successIcon} />
@@ -579,7 +579,7 @@ export default function HashtagFinderAPIPage() {
                   <p className={styles.metricSubtext}>across all platforms</p>
                 </div>
               </div>
-              
+
               <div className={styles.metricCard}>
                 <div className={styles.metricIcon}>
                   <Zap className={styles.confidenceIcon} />
@@ -592,7 +592,7 @@ export default function HashtagFinderAPIPage() {
                   </p>
                 </div>
               </div>
-              
+
               <div className={styles.metricCard}>
                 <div className={styles.metricIcon}>
                   <Activity className={styles.trendIcon} />
@@ -600,8 +600,8 @@ export default function HashtagFinderAPIPage() {
                 <div className={styles.metricContent}>
                   <h4>Sentiment Trend</h4>
                   <p className={styles.metricNumber}>
-                    {sentimentAnalysis.insights.insights.sentimentTrend.charAt(0).toUpperCase() + 
-                     sentimentAnalysis.insights.insights.sentimentTrend.slice(1)}
+                    {sentimentAnalysis.insights.insights.sentimentTrend.charAt(0).toUpperCase() +
+                      sentimentAnalysis.insights.insights.sentimentTrend.slice(1)}
                   </p>
                   <p className={styles.metricSubtext}>
                     {sentimentAnalysis.insights.insights.dominantSentiment} dominant
@@ -652,9 +652,9 @@ export default function HashtagFinderAPIPage() {
                   <ResponsiveContainer width="100%" height={300}>
                     <BarChart data={Object.entries(sentimentAnalysis.platformResults).map(([platform, result]) => ({
                       platform: platform.charAt(0).toUpperCase() + platform.slice(1),
-                      positive: result.sentimentResults.filter(r => r.category === 'positive').length,
-                      negative: result.sentimentResults.filter(r => r.category === 'negative').length,
-                      neutral: result.sentimentResults.filter(r => r.category === 'neutral').length
+                      positive: (result.sentimentResults || []).filter(r => r.category === 'positive').length,
+                      negative: (result.sentimentResults || []).filter(r => r.category === 'negative').length,
+                      neutral: (result.sentimentResults || []).filter(r => r.category === 'neutral').length
                     }))}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="platform" />
@@ -710,19 +710,19 @@ export default function HashtagFinderAPIPage() {
                       <div className={styles.platformMetric}>
                         <span className={styles.metricLabel}>Positive:</span>
                         <span className={styles.positiveValue}>
-                          {result.sentimentResults.filter(r => r.category === 'positive').length}
+                          {(result.sentimentResults || []).filter(r => r.category === 'positive').length}
                         </span>
                       </div>
                       <div className={styles.platformMetric}>
                         <span className={styles.metricLabel}>Negative:</span>
                         <span className={styles.negativeValue}>
-                          {result.sentimentResults.filter(r => r.category === 'negative').length}
+                          {(result.sentimentResults || []).filter(r => r.category === 'negative').length}
                         </span>
                       </div>
                       <div className={styles.platformMetric}>
                         <span className={styles.metricLabel}>Neutral:</span>
                         <span className={styles.neutralValue}>
-                          {result.sentimentResults.filter(r => r.category === 'neutral').length}
+                          {(result.sentimentResults || []).filter(r => r.category === 'neutral').length}
                         </span>
                       </div>
                     </div>
@@ -734,76 +734,76 @@ export default function HashtagFinderAPIPage() {
         )}
 
         {hasResults && (
-        <div className={styles.resultsHeader}>
-          <div className={styles.resultsInfo}>
-            <h2>YouTube Videos</h2>
-            <span className={styles.resultsCount}>
-              Found {totalResults} videos
-            </span>
-          </div>
-          <div className={styles.exportSection}>
-            <ExportButton
-              data={createHashtagFinderExportData(searchResults, searchQuery)}
-              variant="primary"
-              size="medium"
-              showLabel={true}
-              targetElementRef={fullPageRef}
-            />
-          </div>
-        </div>
-      )}
-
-      <div ref={resultsSectionRef} className={styles.resultsContainer}>
-        {hasResults ? (
-          <div className={styles.platformSection}>
-            <div className={styles.platformHeader}>
-              <Youtube className={styles.platformIcon} style={{ color: '#FF0000' }} />
-              <h3>
-                YouTube Videos
-                <span className={styles.resultCount}>
-                  ({totalResults} results)
-                </span>
-              </h3>
+          <div className={styles.resultsHeader}>
+            <div className={styles.resultsInfo}>
+              <h2>YouTube Videos</h2>
+              <span className={styles.resultsCount}>
+                Found {totalResults} videos
+              </span>
             </div>
-            
-            {isMockData && (
-              <div className={styles.mockDataNotice}>
-                <AlertCircle className={styles.noticeIcon} />
-                <span>Showing demo data - API limit reached. Contact hello@ensembledata.com for higher limits.</span>
-              </div>
-            )}
-            
-            <div className={styles.contentGrid}>
-              {renderContent()}
+            <div className={styles.exportSection}>
+              <ExportButton
+                data={createHashtagFinderExportData(searchResults, searchQuery)}
+                variant="primary"
+                size="medium"
+                showLabel={true}
+                targetElementRef={fullPageRef}
+              />
             </div>
           </div>
-        ) : (
-          !isSearching && (
-            <div className={styles.welcomeSection}>
-              <Sparkles className={styles.welcomeIcon} />
-              <h2>Welcome to Hashtag Finder API</h2>
-              <p>Search YouTube hashtags to discover trending content and viral videos.</p>
-              <div className={styles.features}>
-                <div className={styles.feature}>
-                  <Youtube className={styles.featureIcon} />
-                  <h4>YouTube Hashtag Search</h4>
-                  <p>Find trending videos by hashtag</p>
-                </div>
-                <div className={styles.feature}>
-                  <Hash className={styles.featureIcon} />
-                  <h4>Hashtag Analysis</h4>
-                  <p>Discover popular hashtags and content</p>
-                </div>
-                <div className={styles.feature}>
-                  <TrendingUp className={styles.featureIcon} />
-                  <h4>Trend Discovery</h4>
-                  <p>Track viral content and engagement</p>
-                </div>
-              </div>
-            </div>
-          )
         )}
-      </div>
+
+        <div ref={resultsSectionRef} className={styles.resultsContainer}>
+          {hasResults ? (
+            <div className={styles.platformSection}>
+              <div className={styles.platformHeader}>
+                <Youtube className={styles.platformIcon} style={{ color: '#FF0000' }} />
+                <h3>
+                  YouTube Videos
+                  <span className={styles.resultCount}>
+                    ({totalResults} results)
+                  </span>
+                </h3>
+              </div>
+
+              {isMockData && (
+                <div className={styles.mockDataNotice}>
+                  <AlertCircle className={styles.noticeIcon} />
+                  <span>Showing demo data - API limit reached. Contact hello@ensembledata.com for higher limits.</span>
+                </div>
+              )}
+
+              <div className={styles.contentGrid}>
+                {renderContent()}
+              </div>
+            </div>
+          ) : (
+            !isSearching && (
+              <div className={styles.welcomeSection}>
+                <Sparkles className={styles.welcomeIcon} />
+                <h2>Welcome to Hashtag Finder</h2>
+                <p>Search YouTube hashtags to discover trending content and viral videos.</p>
+                <div className={styles.features}>
+                  <div className={styles.feature}>
+                    <Youtube className={styles.featureIcon} />
+                    <h4>YouTube Hashtag Search</h4>
+                    <p>Find trending videos by hashtag</p>
+                  </div>
+                  <div className={styles.feature}>
+                    <Hash className={styles.featureIcon} />
+                    <h4>Hashtag Analysis</h4>
+                    <p>Discover popular hashtags and content</p>
+                  </div>
+                  <div className={styles.feature}>
+                    <TrendingUp className={styles.featureIcon} />
+                    <h4>Trend Discovery</h4>
+                    <p>Track viral content and engagement</p>
+                  </div>
+                </div>
+              </div>
+            )
+          )}
+        </div>
       </div>
 
       {isSearching && (
